@@ -1,0 +1,45 @@
+
+config general
+	option startup_delay '15'
+
+config transparent_proxy
+	list main_server 'nil'
+	option udp_relay_server 'nil'
+	option local_port '1234'
+
+config socks5_proxy
+	list server 'nil'
+	option local_port '1080'
+	option mtu '1492'
+
+config port_forward
+	list server 'nil'
+	option local_port '5300'
+	option destination '94.140.14.14:53'
+	option mtu '1492'
+
+config servers
+	option alias 'sample'
+	option fast_open '0'
+	option no_delay '0'
+	option server '127.0.0.1'
+	option server_port '1443'
+	option timeout '60'
+	option password 'password'
+	option encrypt_method 'rc4-md5'
+
+config access_control
+	option self_proxy '1'
+	option lan_target 'SS_SPEC_WAN_AC'
+	option wan_bp_list '/dev/null'
+	list wan_bp_ips '192.168.0.1'
+	list wan_bp_ips '192.168.1.1'
+	list wan_bp_ips '192.168.2.1'
+	list wan_bp_ips '192.168.3.1'
+	list wan_bp_ips '192.168.4.1'
+	list wan_bp_ips '192.168.5.1'
+    list wan_bp_ips '192.168.6.1'
+	list wan_bp_ips '192.168.7.1'
+	list wan_bp_ips '192.168.8.1'
+	list wan_bp_ips '2.1.2.1'
+	list wan_bp_ips '4.3.2.1'

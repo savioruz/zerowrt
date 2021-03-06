@@ -1,0 +1,167 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "%u seconds"
+msgstr "%u detik"
+
+msgid "Access Control"
+msgstr "Kontrol Akses"
+
+msgid "Alias"
+msgstr "Alias"
+
+msgid "Alias(optional)"
+msgstr "Alias (opsional)"
+
+msgid "Bypassed IP List"
+msgstr "Daftar IP yang di-Bypass"
+
+msgid "Bypassed IP"
+msgstr "Bypassed IP"
+
+msgid "ChinaDNS CHNRoute"
+msgstr "China DNS"
+
+msgid "Connection Timeout"
+msgstr "Koneksi Habis"
+
+msgid "Destination"
+msgstr "Destinasi"
+
+msgid "Direct"
+msgstr "Direct"
+
+msgid "Directly Key"
+msgstr "Directly Key"
+
+msgid "Disable"
+msgstr "Matikan"
+
+msgid "Edit Server"
+msgstr "Edit Server"
+
+msgid "Enable"
+msgstr "Hidupkan"
+
+msgid "Encrypt Method"
+msgstr "Metode Enkripsi"
+
+msgid "Extra arguments"
+msgstr "Argumen Tambahan e.g. obfs"
+
+msgid "Forwarded IP List"
+msgstr "Daftar IP yang di-Forward"
+
+msgid "Forwarded IP"
+msgstr "IP yang d-iForward"
+
+msgid "Global"
+msgstr "Global"
+
+msgid "Global Settings"
+msgstr "Pengaturan Global"
+
+msgid "Host"
+msgstr "Host"
+
+msgid "LAN Hosts"
+msgstr "LAN Hosts"
+
+msgid "Local Port"
+msgstr "Local Port"
+
+msgid "Main Server"
+msgstr "Server Utama"
+
+msgid "None"
+msgstr "Kosong"
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Not enabled"
+msgstr "Not Enabled"
+
+msgid "NOT RUNNING"
+msgstr "Tidak Berjalan"
+
+msgid "NULL - As Global Proxy"
+msgstr "NULL - As Global Proxy"
+
+msgid "Passes additional arguments to iptables. Use with care!"
+msgstr "Passes additional arguments to iptables. (Hanya untuk yang profesional)"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "Plugin"
+msgstr "Plugin"
+
+msgid "Plugin Arguments"
+msgstr "Plugin Tambahan"
+
+msgid "Plugin Name"
+msgstr "Nama Plugin"
+
+msgid "Port Forward"
+msgstr "Port Forward"
+
+msgid "Proxy port numbers %s only"
+msgstr "Nomor proxy port (hanya %s)"
+
+msgid "RUNNING"
+msgstr "Berjalan"
+
+msgid "Running Status"
+msgstr "Status"
+
+msgid "Same as Main Server"
+msgstr "Sama Seperti Main Server"
+
+msgid "Self Proxy"
+msgstr "Self Proxy"
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Server Address"
+msgstr "Alamat Server"
+
+msgid "Servers Manage"
+msgstr "Manage Server"
+
+msgid "Server Port"
+msgstr "Server Port"
+
+msgid "ShadowSocks"
+msgstr "ShadowSocks"
+
+msgid "SOCKS5 Proxy"
+msgstr "SOCKS5 Proxy"
+
+msgid "Startup Delay"
+msgstr "Startup Delay"
+
+msgid "TCP Fast Open"
+msgstr "TCP Fast Open"
+
+msgid "TCP no-delay"
+msgstr "TCP no-delay"
+
+msgid "Transparent Proxy"
+msgstr "Proxy Transparan"
+
+msgid "Proxy Type"
+msgstr "Tipe Proxy"
+
+msgid "UDP-Relay Server"
+msgstr "UDP-Relay Server"
+
+msgid "Unusable - Missing iptables-mod-tproxy or ip"
+msgstr "Unusable - Missing iptables-mod-tproxy"
+
+msgid "Zone LAN"
+msgstr "Zona LAN"
+
+msgid "Zone WAN"
+msgstr "Zona WAN"

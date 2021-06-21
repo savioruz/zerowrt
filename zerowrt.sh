@@ -124,6 +124,7 @@ export HOME_DIR="${ROOT_DIR}/root"
             ; cd ${IMAGEBUILDER_DIR} \
             ; sed -i -e "s/CONFIG_TARGET_KERNEL_PARTSIZE=.*/CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}/" .config \
             ; sed -i -e "s/CONFIG_TARGET_ROOTFS_PARTSIZE=.*/CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}/" .config \
+            ; git clone https://github.com/ohmyzsh/ohmyzsh.git ${HOME_DIR}/.oh-my-zsh \
             ; mkdir -p packages \
             ; export V2RAY_VERSION="4.39.2-1" \
             ; wget -q -P packages/ https://github.com/kuoruan/openwrt-v2ray/releases/download/v${V2RAY_VERSION}/v2ray-core_${V2RAY_VERSION}_${ARCH}.ipk \

@@ -38,11 +38,11 @@ export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
         ${ECMD} "   ───────────────────────────────────────────────────────────────────────────────"
         ${ECMD} "   │ bcm2708 │ ${MODEL_1}              │"
         ${ECMD} "   │ bcm2709 │ ${MODEL_2} │"
-        ${ECMD} "   │ bcm2710 │ ${MODEL_3}               │"
+        ${ECMD} "   │ bcm2710 │ ${MODEL_3}     │"
         ${ECMD} "   │ bcm2711 │ ${MODEL_4}                   │"
         ${ECMD} "   ───────────────────────────────────────────────────────────────────────────────"
         ${ECMD} ; ${SLP}
-            PS3="Select RaspberryPi model : [ctrl+c to quit] "
+            PS3="Select Raspberry Pi model : "
             opts2=("bcm2708" "bcm2709" "bcm2710" "bcm2711")
                 select opt in "${opts2[@]}"
                 do
@@ -104,12 +104,14 @@ ZEROWRT_TYPE () {
                     export Ztype="tiny"
                     export DIR_PACKAGES="tiny/packages.txt"
                     export DIR_DISABLED="tiny/disabled.txt"
+                    export DIR_TYPE="tiny/"
                     break
                     ;;
                 "gimmick")
                     export Ztype="gimmick"
                     export DIR_PACKAGES="gimmick/packages.txt"
                     export DIR_DISABLED="gimmick/disabled.txt"
+                    export DIR_TYPE="gimmick/"
                     break
                     ;;
                 *)
@@ -131,13 +133,13 @@ export HOME_DIR="${ROOT_DIR}/root"
             ; wget -q ${IMAGEBUILDER_URL} \
             ; tar xf ${IMAGEBUILDER_FILE} \
             ; rm ${IMAGEBUILDER_FILE} \
-            ; cp $(pwd)/${DIR_DISABLED} ${IMAGEBUILDER_DIR} \
-            ; cp $(pwd)/${DIR_PACKAGES} ${IMAGEBUILDER_DIR} \
+            ; cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} \
+            ; cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} \
             ; export ZEROWRT_PACKAGES="$(echo $(cat packages.txt))" \
             ; export ZEROWRT_DISABLED="$(echo $(cat disabled.txt))"
         ${ECMD} -e "Preparing Data\n" \
             ; mkdir -p ${ROOT_DIR} \
-            ; cp -arf $(pwd)/data/* ${ROOT_DIR} \
+            ; cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} \
             ; cd ${IMAGEBUILDER_DIR} \
             ; sed -i -e "s/CONFIG_TARGET_KERNEL_PARTSIZE=.*/CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}/" .config \
             ; sed -i -e "s/CONFIG_TARGET_ROOTFS_PARTSIZE=.*/CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}/" .config \

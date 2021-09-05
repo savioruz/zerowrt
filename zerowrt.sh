@@ -1,16 +1,29 @@
 #!/usr/bin/bash
 #!/usr/bin/zsh
 
-# Set var
+export PRIN="printf"
+export ECMD="echo -e"
+export CR='\e[0m'
+export COL_LIGHT_GREEN='\e[1;32m'
+export COL_LIGHT_RED='\e[1;31m'
+export TICK="[${COL_LIGHT_GREEN}✓${CR}]"
+export CROSS="[${COL_LIGHT_RED}✗${CR}]"
+export INFO="[i]"
+export QST="[?]"
+export DONE="${COL_LIGHT_GREEN} done !${CR}"
+export SLP="sleep 0.69s"
 export OPENWRT_ORIGINAL_URL="https://downloads.openwrt.org/releases"
 export OPENWRT_RASPI="bcm27xx"
-export ECMD="echo"
-export SLP="sleep 1"
+
+error() {
+    ${PRIN} "$1 ${CROSS}"
+    exit
+}
 
 # Select OpenWrt version from official repository
 OPENWRT_VERSION () {
-    ${SLP} ; ${ECMD}
-    PS3="Select version : "
+    ${ECMD}
+    PS3=" ${QST} Select version : "
     opts1=("21.02.0")
         select opt in "${opts1[@]}"
         do
@@ -24,7 +37,6 @@ OPENWRT_VERSION () {
                     ;;
             esac
         done
-    ${ECMD} -e "Selected Version : ${OPENWRT_VERZION}\n" ; ${SLP}
 }
 
 # Select Raspberry Pi Model
@@ -41,8 +53,8 @@ export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
         ${ECMD} "   │ bcm2710 │ ${MODEL_3}        │"
         ${ECMD} "   │ bcm2711 │ ${MODEL_4}                   │"
         ${ECMD} "   ───────────────────────────────────────────────────────────────────────────────"
-        ${ECMD} ; ${SLP}
-            PS3="Select Raspberry Pi model : "
+        ${ECMD}
+            PS3=" ${QST} Select Raspberry Pi model : "
             opts2=("bcm2708" "bcm2709" "bcm2710" "bcm2711")
                 select opt in "${opts2[@]}"
                 do
@@ -80,22 +92,17 @@ export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
                             ;;
                     esac
                 done
-        ${ECMD} -e "Selected model: ${INFO_MODEL}\n" ; ${SLP}
 }
 
 OPENWRT_SIZE () {
     # Set partition size of kernel
-    read -r -p "Write size of /boot [>30 Mb] : " BOOTFS
-    ${ECMD} -e "CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}\n"
-    ${SLP}
+    read -r -p " ${QST} Write size of /boot [>30 Mb] : " BOOTFS
     # Set partition size of /rootfs
-    read -r -p "Write size of /root [>200 Mb] : " ROOTFS
-    ${ECMD} -e "CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}\n"
-    ${SLP}
+    read -r -p " ${QST} Write size of /root [>200 Mb] : " ROOTFS
 }
 ZEROWRT_TYPE () {
-    ${SLP} ; ${ECMD}
-    PS3="Select ZEROWRT type : "
+    ${SLP}
+    PS3=" ${QST} Select ZEROWRT type : "
     opts1=("tiny" "gimmick")
         select opt in "${opts1[@]}"
         do
@@ -119,7 +126,6 @@ ZEROWRT_TYPE () {
                     ;;
             esac
         done
-    ${ECMD} -e "Selected Type : ${Ztype}\n" ; ${SLP}
 }
 
 # Preparation before cooking ZeroWrt
@@ -129,55 +135,119 @@ export IMAGEBUILDER_FILE="${IMAGEBUILDER_DIR}.tar.xz"
 export IMAGEBUILDER_URL="${OPENWRT_ORIGINAL_URL}/${OPENWRT_VERZION}/targets/${OPENWRT_RASPI}/${MODEL_ARCH}/${IMAGEBUILDER_FILE}"
 export ROOT_DIR="${IMAGEBUILDER_DIR}/files"
 export HOME_DIR="${ROOT_DIR}/root"
-        ${ECMD} -e "Preparing Tools\n" \
-            ; wget -q ${IMAGEBUILDER_URL} \
-            ; tar xf ${IMAGEBUILDER_FILE} \
-            ; rm ${IMAGEBUILDER_FILE} \
-            ; cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} \
-            ; cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} \
-            ; export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))" \
-            ; export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
-        ${ECMD} -e "Preparing Data\n" \
-            ; mkdir -p ${ROOT_DIR} \
-            ; cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} \
-            ; cd ${IMAGEBUILDER_DIR} \
-            ; sed -i -e "s/CONFIG_TARGET_KERNEL_PARTSIZE=.*/CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}/" .config \
-            ; sed -i -e "s/CONFIG_TARGET_ROOTFS_PARTSIZE=.*/CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}/" .config \
-            ; git clone https://github.com/ohmyzsh/ohmyzsh.git files/root/.oh-my-zsh \
-            ; mkdir -p packages \
-        ${ECMD} -e "Preparation Done\n"
+    # Prepare imagebuilder
+    ${PRIN} " %b %s ... " "${INFO}" "Downloading Imagebuilder"
+    	wget -q ${IMAGEBUILDER_URL} || error "Failed to download imagebuilder !"
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+    ${PRIN} " %b %s ... " "${INFO}" "Extracting Imagebuilder"
+        tar xf ${IMAGEBUILDER_FILE} || error "Failed to extract file !"
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+    ${PRIN} " %b %s ... " "${INFO}" "Removing Imagebuilder"
+        rm ${IMAGEBUILDER_FILE} || error "Failed to remove file !"
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+    ${PRIN} " %b %s ... " "${INFO}" "Preparing requirements"
+        cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt !"
+        cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt !"
+        export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))"
+        export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+    # Prepare data
+    ${PRIN} " %b %s ... " "${INFO}" "Preparing data"
+        mkdir -p ${ROOT_DIR} || error "Failed to create files/root directory !"
+        cp -arf $(pwd)/${DIR_TYPE}/data/ ${ROOT_DIR} || "Failed to copy data !"
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+    # Change main directory
+    cd ${IMAGEBUILDER_DIR} || error "Failed to change directory !"
+    ${PRIN} " %b %s " "${INFO}" "Current directory : $(pwd)"
+    ${SLP}
+    ${PRIN} "%b\\n" "${TICK}"
+    ${PRIN} " %b %s ... " "${INFO}" "Configure data"
+        sed -i -e "s/CONFIG_TARGET_KERNEL_PARTSIZE=.*/CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}/" .config || error "Failed to change bootfs size !"
+        sed -i -e "s/CONFIG_TARGET_ROOTFS_PARTSIZE=.*/CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}/" .config || error "Failed to change rootfs size !"
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+    ${PRIN} " %b %s ... " "${INFO}" "Installing ohmyzsh"
+        export OMZ_REPO="https://github.com/ohmyzsh/ohmyzsh.git"
+        git clone -q ${OMZ_REPO} files/root/.oh-my-zsh || error "Failed to clone ${OMZ_REPO}"
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
 }
 
 LIBERNET_PREPARE () {
     # Install libernet proprietary
-    wget -q -P ${IMAGEBUILDER_DIR}/ https://github.com/lutfailham96/libernet/raw/main/binaries.txt
-        while IFS= read -r line; do
-            if ! which ${line} > /dev/null 2>&1 ; then
-            bin="files/usr/bin/${line}"
-            echo "Installing ${line} ..."
-            curl -sLko "${bin}" "https://github.com/lutfailham96/libernet-proprietary/raw/main/${ARCH}/binaries/${line}"
-            chmod +x "${bin}"
-            fi
-        done < binaries.txt
-    # Install v2ray
-    export V2RAY_VERSION="4.41.1-1" \
-    wget -q -P packages/ https://github.com/kuoruan/openwrt-v2ray/releases/download/v${V2RAY_VERSION}/v2ray-core_${V2RAY_VERSION}_${ARCH}.ipk \
-    ${ECMD} "src v2ray-core file:packages" >> repositories.conf
+    ${PRIN} " %b %s ... \n" "${INFO}" "Installing libernet"
+        wget -q https://github.com/lutfailham96/libernet/raw/main/binaries.txt || error "Failed to download file:binaries.txt !"
+            while IFS= read -r line; do
+                if ! which ${line} > /dev/null 2>&1 ; then
+                bin="files/usr/bin/${line}"
+                mkdir -p files/usr/bin
+                ${ECMD} "\e[0;34mInstalling\e[0m ${line} ..."
+                wget -q -O "${bin}" "https://github.com/lutfailham96/libernet-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download binaries !"
+                chmod +x "${bin}" || error "Failed to chmod !"
+                fi
+            done < binaries.txt
+        # Install v2ray
+        mkdir -p packages
+        export V2RAY_VERSION="4.41.1-1"
+        wget -q -P packages/ https://github.com/kuoruan/openwrt-v2ray/releases/download/v${V2RAY_VERSION}/v2ray-core_${V2RAY_VERSION}_${ARCH}.ipk || error "Failed to download file:v2ray.ipk !"
+        ${ECMD} "src v2ray-core file:packages" >> repositories.conf
+    ${PRIN} " %b %s " "${INFO}" "Install Libernet"
+    ${PRIN} "%b" "${DONE}"
+    ${SLP}
+	${PRIN} " %b\\n" "${TICK}"
 }
 
 # Cook the image
 OPENWRT_BUILD () {
-    make image PROFILE="${INFO_MODEL}" \
-    FILES="files/" EXTRA_IMAGE_NAME="zerowrt" \
-    PACKAGES="${ZEROWRT_PACKAGES}" DISABLED_SERVICES="${ZEROWRT_DISABLED}"
+    ${PRIN} " %b %s ... " "${INFO}" "Build the image"
+        sleep 2
+        make image PROFILE="${INFO_MODEL}" \
+        FILES="files/" EXTRA_IMAGE_NAME="zerowrt" \
+        PACKAGES="${ZEROWRT_PACKAGES}" DISABLED_SERVICES="${ZEROWRT_DISABLED}"
+    # Back to first directory
+    cd ..
+    mkdir -p results
+    cp -r ${IMAGEBUILDER_DIR}/bin/targets/${OPENWRT_RASPI}/${MODEL_ARCH} results
+    ${PRIN} " %b %s " "${INFO}" "Build completed for ${INFO_MODEL}"
+    ${PRIN} "%b" "${DONE}"
+    ${SLP}
+	${PRIN} " %b\\n" "${TICK}"
+    ${PRIN} " %b %s " "${INFO}" "Image stored at : $(pwd)/results/${MODEL_ARCH}"
+    ${SLP}
+	${PRIN} " %b\\n" "${TICK}"
 }
 
 main () {
-    OPENWRT_VERSION
-    OPENWRT_MODEL
-    OPENWRT_SIZE
-    ZEROWRT_TYPE
-    OPENWRT_PREPARE
+    clear ; OPENWRT_VERSION
+    clear ; OPENWRT_MODEL
+    clear ; OPENWRT_SIZE
+    clear ; ZEROWRT_TYPE
+    clear ; OPENWRT_PREPARE
+    # Print info version
+        ${PRIN} " %b %s " "${INFO}" "Selected Version : ${OPENWRT_VERZION}"
+        ${SLP}
+        ${PRIN} "%b\\n" "${TICK}"
+    # Print info model
+        ${PRIN} " %b %s " "${INFO}" "Selected model: ${INFO_MODEL}"
+        ${SLP}
+        ${PRIN} "%b\\n" "${TICK}"
+    # Print info size bootfs
+        ${PRIN} " %b %s " "${INFO}" "CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}"
+        ${SLP}
+        ${PRIN} "%b\\n" "${TICK}"
+    # Print info size rootfs
+        ${PRIN} " %b %s " "${INFO}" "CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}"
+        ${SLP}
+        ${PRIN} "%b\\n" "${TICK}"
+    # Print info type zerowrt
+        ${PRIN} " %b %s " "${INFO}" "Selected Type : ${Ztype}"
+        ${SLP}
+        ${PRIN} "%b\\n" "${TICK}"
     if [[ "${Ztype}" == "tiny" ]] ; then
         OPENWRT_BUILD
     elif [[ "${Ztype}" == "gimmick" ]] ; then

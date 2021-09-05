@@ -25,10 +25,6 @@ config interface 'wan'
 	option proto 'dhcp'
 	option device 'eth1'
 
-config interface 'libernet'
-	option proto 'none'
-	option device 'tun1'
-
 config interface 'openvpn'
 	option proto 'none'
 	option device 'tun0'

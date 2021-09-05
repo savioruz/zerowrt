@@ -135,8 +135,8 @@ export HOME_DIR="${ROOT_DIR}/root"
             ; rm ${IMAGEBUILDER_FILE} \
             ; cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} \
             ; cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} \
-            ; export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))" \
-            ; export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
+            ; export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))" \
+            ; export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
         ${ECMD} -e "Preparing Data\n" \
             ; mkdir -p ${ROOT_DIR} \
             ; cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} \

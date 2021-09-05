@@ -10,21 +10,13 @@ export SLP="sleep 1"
 # Select OpenWrt version from official repository
 OPENWRT_VERSION () {
     ${SLP} ; ${ECMD}
-    PS3="Select version : [ctrl+c to quit] "
-    opts1=("21.02.0-rc1" "21.02.0-rc2" "21.02.0-rc3")
+    PS3="Select version : "
+    opts1=("21.02.0")
         select opt in "${opts1[@]}"
         do
             case $opt in
-                "21.02.0-rc1")
-                    export OPENWRT_VERZION="21.02.0-rc1"
-                    break
-                    ;;
-                "21.02.0-rc2")
-                    export OPENWRT_VERZION="21.02.0-rc2"
-                    break
-                    ;;
-                "21.02.0-rc3")
-                    export OPENWRT_VERZION="21.02.0-rc3"
+                "21.02.0")
+                    export OPENWRT_VERZION="21.02.0"
                     break
                     ;;
                 *)
@@ -39,7 +31,7 @@ OPENWRT_VERSION () {
 OPENWRT_MODEL () {
 export MODEL_1="Raspberry Pi 1 (32 bit) compatible on pi 0,0w,1B,1B+"
 export MODEL_2="Raspberry Pi 2 (32 bit) compatible on pi 2B,2B+,3B,3B+,CM3,4B,CM4"
-export MODEL_3="Raspberry Pi 3 (64 bit) compatible on pi 3B,3B+,CM3"
+export MODEL_3="Raspberry Pi 3 (64 bit) compatible on pi 2Brev2,3B,3B+,CM3"
 export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
         ${ECMD} "   ───────────────────────────────────────────────────────────────────────────────"
         ${ECMD} "   │  Model  │                           Descriptions                            │"
@@ -93,13 +85,39 @@ export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
 
 OPENWRT_SIZE () {
     # Set partition size of kernel
-    read -r -p "Write size of /boot [Mb] : " BOOTFS
+    read -r -p "Write size of /boot >30 [Mb] : " BOOTFS
     ${ECMD} -e "CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}\n"
     ${SLP}
     # Set partition size of /rootfs
-    read -r -p "Write size of /root [Mb] : " ROOTFS
+    read -r -p "Write size of /root >200 [Mb] : " ROOTFS
     ${ECMD} -e "CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}\n"
     ${SLP}
+}
+ZEROWRT_TYPE () {
+    ${SLP} ; ${ECMD}
+    PS3="Select ZEROWRT type : "
+    opts1=("tiny" "gimmick")
+        select opt in "${opts1[@]}"
+        do
+            case $opt in
+                "tiny")
+                    export Ztype="tiny"
+                    export DIR_PACKAGES="tiny/packages.txt"
+                    export DIR_DISABLED="tiny/disabled.txt"
+                    break
+                    ;;
+                "gimmick")
+                    export Ztype="gimmick"
+                    export DIR_PACKAGES="gimmick/packages.txt"
+                    export DIR_DISABLED="gimmick/disabled.txt"
+                    break
+                    ;;
+                *)
+                    ${ECMD} "invalid option $REPLY"
+                    ;;
+            esac
+        done
+    ${ECMD} -e "Selected Type : ${Ztype}\n" ; ${SLP}
 }
 
 # Preparation before cooking ZeroWrt
@@ -113,9 +131,8 @@ export HOME_DIR="${ROOT_DIR}/root"
             ; wget -q ${IMAGEBUILDER_URL} \
             ; tar xf ${IMAGEBUILDER_FILE} \
             ; rm ${IMAGEBUILDER_FILE} \
-            ; cp packages.txt ${IMAGEBUILDER_DIR} \
-            ; cp disabled.txt ${IMAGEBUILDER_DIR} \
-            ; wget -q -P ${IMAGEBUILDER_DIR}/ https://github.com/lutfailham96/libernet/raw/main/binaries.txt \
+            ; cp $(pwd)/${DIR_DISABLED} ${IMAGEBUILDER_DIR} \
+            ; cp $(pwd)/${DIR_PACKAGES} ${IMAGEBUILDER_DIR} \
             ; export ZEROWRT_PACKAGES="$(echo $(cat packages.txt))" \
             ; export ZEROWRT_DISABLED="$(echo $(cat disabled.txt))"
         ${ECMD} -e "Preparing Data\n" \
@@ -126,21 +143,24 @@ export HOME_DIR="${ROOT_DIR}/root"
             ; sed -i -e "s/CONFIG_TARGET_ROOTFS_PARTSIZE=.*/CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}/" .config \
             ; git clone https://github.com/ohmyzsh/ohmyzsh.git files/root/.oh-my-zsh \
             ; mkdir -p packages \
-            ; export V2RAY_VERSION="4.39.2-1" \
-            ; wget -q -P packages/ https://github.com/kuoruan/openwrt-v2ray/releases/download/v${V2RAY_VERSION}/v2ray-core_${V2RAY_VERSION}_${ARCH}.ipk \
-            ; ${ECMD} "src v2ray-core file:packages" >> repositories.conf
         ${ECMD} -e "Preparation Done\n"
 }
 
 LIBERNET_PREPARE () {
-    while IFS= read -r line; do
-        if ! which ${line} > /dev/null 2>&1 ; then
-        bin="files/usr/bin/${line}"
-        echo "Installing ${line} ..."
-        curl -sLko "${bin}" "https://github.com/lutfailham96/libernet-proprietary/raw/main/${ARCH}/binaries/${line}"
-        chmod +x "${bin}"
-        fi
-    done < binaries.txt
+    # Install libernet proprietary
+    wget -q -P ${IMAGEBUILDER_DIR}/ https://github.com/lutfailham96/libernet/raw/main/binaries.txt
+        while IFS= read -r line; do
+            if ! which ${line} > /dev/null 2>&1 ; then
+            bin="files/usr/bin/${line}"
+            echo "Installing ${line} ..."
+            curl -sLko "${bin}" "https://github.com/lutfailham96/libernet-proprietary/raw/main/${ARCH}/binaries/${line}"
+            chmod +x "${bin}"
+            fi
+        done < binaries.txt
+    # Install v2ray
+    export V2RAY_VERSION="4.41.1-1" \
+    wget -q -P packages/ https://github.com/kuoruan/openwrt-v2ray/releases/download/v${V2RAY_VERSION}/v2ray-core_${V2RAY_VERSION}_${ARCH}.ipk \
+    ${ECMD} "src v2ray-core file:packages" >> repositories.conf
 }
 
 # Cook the image
@@ -154,9 +174,14 @@ main () {
     OPENWRT_VERSION
     OPENWRT_MODEL
     OPENWRT_SIZE
+    ZEROWRT_TYPE
     OPENWRT_PREPARE
-    LIBERNET_PREPARE
-    OPENWRT_BUILD
+    if [[ "${Ztype}" == "tiny" ]] ; then
+        OPENWRT_BUILD
+    elif [[ "${Ztype}" == "gimmick" ]] ; then
+        LIBERNET_PREPARE
+        OPENWRT_BUILD
+    fi
 }
 
 main

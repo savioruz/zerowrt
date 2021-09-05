@@ -62,6 +62,7 @@ unzip
 usb-modeswitch
 usbutils
 wireguard-tools
+v2ray-core
 wget
 xl2tpd
 zsh

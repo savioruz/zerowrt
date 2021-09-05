@@ -38,7 +38,7 @@ export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
         ${ECMD} "   ───────────────────────────────────────────────────────────────────────────────"
         ${ECMD} "   │ bcm2708 │ ${MODEL_1}              │"
         ${ECMD} "   │ bcm2709 │ ${MODEL_2} │"
-        ${ECMD} "   │ bcm2710 │ ${MODEL_3}     │"
+        ${ECMD} "   │ bcm2710 │ ${MODEL_3}        │"
         ${ECMD} "   │ bcm2711 │ ${MODEL_4}                   │"
         ${ECMD} "   ───────────────────────────────────────────────────────────────────────────────"
         ${ECMD} ; ${SLP}
@@ -85,11 +85,11 @@ export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
 
 OPENWRT_SIZE () {
     # Set partition size of kernel
-    read -r -p "Write size of /boot >30 [Mb] : " BOOTFS
+    read -r -p "Write size of /boot [>30 Mb] : " BOOTFS
     ${ECMD} -e "CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}\n"
     ${SLP}
     # Set partition size of /rootfs
-    read -r -p "Write size of /root >200 [Mb] : " ROOTFS
+    read -r -p "Write size of /root [>200 Mb] : " ROOTFS
     ${ECMD} -e "CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}\n"
     ${SLP}
 }
@@ -135,8 +135,8 @@ export HOME_DIR="${ROOT_DIR}/root"
             ; rm ${IMAGEBUILDER_FILE} \
             ; cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} \
             ; cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} \
-            ; export ZEROWRT_PACKAGES="$(echo $(cat packages.txt))" \
-            ; export ZEROWRT_DISABLED="$(echo $(cat disabled.txt))"
+            ; export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))" \
+            ; export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
         ${ECMD} -e "Preparing Data\n" \
             ; mkdir -p ${ROOT_DIR} \
             ; cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} \

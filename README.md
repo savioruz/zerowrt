@@ -12,7 +12,7 @@ Debian / Ubuntu
 
 # [ Build ]
 
-* 1. Clone this repo's
+1. Clone this repo's
     `git clone https://github.com/jakues/zerowrt.git`
-* 2. Run script
+2. Run script
     `./zerowrt.sh`

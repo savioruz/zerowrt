@@ -209,10 +209,16 @@ OPENWRT_BUILD () {
         make image PROFILE="${INFO_MODEL}" \
         FILES="files/" EXTRA_IMAGE_NAME="zerowrt" \
         PACKAGES="${ZEROWRT_PACKAGES}" DISABLED_SERVICES="${ZEROWRT_DISABLED}"
+    ${PRIN} " %b %s " "${INFO}" "Cleanup"
     # Back to first directory
-    cd ..
-    mkdir -p results
-    cp -r ${IMAGEBUILDER_DIR}/bin/targets/${OPENWRT_RASPI}/${MODEL_ARCH} results
+    cd .. || error "Can't back to working directory !"
+    # Store the firmware to ez dir
+    mkdir -p results || error "Failed to create directory"
+    cp -r ${IMAGEBUILDER_DIR}/bin/targets/${OPENWRT_RASPI}/${MODEL_ARCH} results || error "Failed to store firmware !"
+    # Clean up
+    rm -rf ${IMAGEBUILDER_DIR} || error "Failed to remove imagebuilder directory !"
+    ${SLP}
+	${PRIN} " %b\\n" "${TICK}"
     ${PRIN} " %b %s " "${INFO}" "Build completed for ${INFO_MODEL}"
     ${SLP}
 	${PRIN} " %b\\n" "${TICK}"

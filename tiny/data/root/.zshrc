@@ -106,5 +106,4 @@ bindkey '^[[F' end-of-line
 
 neofetch
 
-alias LIBERNET_DIR=/root/libernet
 alias service=/etc/zshinit

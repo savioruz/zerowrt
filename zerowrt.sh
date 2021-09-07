@@ -204,7 +204,7 @@ LIBERNET_PREPARE () {
 
 # Cook the image
 OPENWRT_BUILD () {
-    ${PRIN} " %b %s ... " "${INFO}" "Build the image"
+    ${PRIN} " %b %s ... \n" "${INFO}" "Ready to cook"
         sleep 2
         make image PROFILE="${INFO_MODEL}" \
         FILES="files/" EXTRA_IMAGE_NAME="zerowrt" \
@@ -214,7 +214,6 @@ OPENWRT_BUILD () {
     mkdir -p results
     cp -r ${IMAGEBUILDER_DIR}/bin/targets/${OPENWRT_RASPI}/${MODEL_ARCH} results
     ${PRIN} " %b %s " "${INFO}" "Build completed for ${INFO_MODEL}"
-    ${PRIN} "%b" "${DONE}"
     ${SLP}
 	${PRIN} " %b\\n" "${TICK}"
     ${PRIN} " %b %s " "${INFO}" "Image stored at : $(pwd)/results/${MODEL_ARCH}"

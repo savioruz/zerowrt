@@ -1,4 +1,6 @@
-<h1 align="center">ZeroWrt</h1>
+<h1 align="center">ZeroWRT</h1>
+
+<p align="center"><b>An OpenWRT firmware builder PnP for Raspberry Pi</b></p>
 
 ![zerowrt](https://raw.githubusercontent.com/jakues/zerowrt/master/images/zerowrt.png)
 

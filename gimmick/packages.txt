@@ -6,7 +6,7 @@ comgt-ncm
 curl
 coreutils
 coreutils-stdbuf
-dnsmasq
+dnsmasq-full
 git
 git-http
 httping

@@ -204,10 +204,11 @@ LIBERNET_PREPARE () {
 
 # Cook the image
 OPENWRT_BUILD () {
+    # Build
     ${PRIN} " %b %s ... \n" "${INFO}" "Ready to cook"
         sleep 2
         make image PROFILE="${INFO_MODEL}" \
-        FILES="files/" EXTRA_IMAGE_NAME="zerowrt" \
+        FILES="$(pwd)/files/" EXTRA_IMAGE_NAME="zerowrt" \
         PACKAGES="${ZEROWRT_PACKAGES}" DISABLED_SERVICES="${ZEROWRT_DISABLED}"
     ${PRIN} " %b %s " "${INFO}" "Cleanup"
     # Back to first directory

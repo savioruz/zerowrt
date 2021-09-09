@@ -15,5 +15,7 @@ Debian / Ubuntu
 
 1. Clone this repo's
     `git clone https://github.com/jakues/zerowrt.git`
-2. Run script
+2. Go to directory
+    `cd zerowrt`
+3. Run script
     `./zerowrt.sh`

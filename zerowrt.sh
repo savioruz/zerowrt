@@ -158,7 +158,8 @@ export HOME_DIR="${ROOT_DIR}/root"
     # Prepare data
     ${PRIN} " %b %s ... " "${INFO}" "Preparing data"
         mkdir -p ${ROOT_DIR} || error "Failed to create files/root directory !"
-        cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || "Failed to copy data !"
+        cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || error "Failed to copy data !"
+        chmod +x ${ROOT_DIR}/usr/bin/neofetch || error "Failed to chmod neofetch"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
     # Change main directory

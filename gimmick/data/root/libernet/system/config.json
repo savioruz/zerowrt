@@ -1,6 +1,6 @@
 {
     "tunnel": {
-        "autostart": true,
+        "autostart": false,
         "dns_resolver": false,
         "ping_loop": true,
         "mode": 0,
@@ -34,7 +34,7 @@
     },
     "system": {
         "username": "admin",
-        "password": "kadall123@",
+        "password": "libernet",
         "memory_cleaner": true
     }
 }

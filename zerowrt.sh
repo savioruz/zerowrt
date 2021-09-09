@@ -15,8 +15,9 @@ export DONE="${COL_LIGHT_GREEN} done !${CR}"
 export SLP="sleep 0.69s"
 export OPENWRT_ORIGINAL_URL="https://downloads.openwrt.org/releases"
 export OPENWRT_RASPI="bcm27xx"
-# App Version
+# V2ray Version
 export V2RAY_VERSION="4.41.1-1"
+# Openclash Version
 export OC_VER="0.43.04-beta"
 
 error() {

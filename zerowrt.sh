@@ -159,7 +159,8 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${PRIN} " %b %s ... " "${INFO}" "Preparing data"
         mkdir -p ${ROOT_DIR} || error "Failed to create files/root directory !"
         cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || error "Failed to copy data !"
-        chmod +x ${ROOT_DIR}/usr/bin/neofetch || error "Failed to chmod neofetch"
+        chmod +x ${ROOT_DIR}/usr/bin/neofetch || error "Failed to chmod:neofetch"
+        chmod +x ${ROOT_DIR}/etc/zshinit || error "Failed to chmod:zshinit"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
     # Change main directory

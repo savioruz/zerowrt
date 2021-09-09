@@ -80,3 +80,4 @@ v2ray-core
 wget
 xl2tpd
 zsh
+-dnsmasq

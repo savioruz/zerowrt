@@ -34,9 +34,9 @@ kmod-usb-storage
 kmod-usb-uhci
 kmod-usb-wdm
 kmod-usb2
-kmod-wireguard
 luci
 luci-app-openvpn
+luci-app-ttyd
 luci-theme-bootstrap
 luci-theme-material
 nano

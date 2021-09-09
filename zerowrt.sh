@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 #!/usr/bin/zsh
 
+# Set Variable
 export PRIN="printf"
 export ECMD="echo -e"
 export CR='\e[0m'
@@ -14,6 +15,9 @@ export DONE="${COL_LIGHT_GREEN} done !${CR}"
 export SLP="sleep 0.69s"
 export OPENWRT_ORIGINAL_URL="https://downloads.openwrt.org/releases"
 export OPENWRT_RASPI="bcm27xx"
+# App Version
+export V2RAY_VERSION="4.41.1-1"
+export OC_VER="0.43.04-beta"
 
 error() {
     ${PRIN} "$1 ${CROSS}"
@@ -196,10 +200,13 @@ LIBERNET_PREPARE () {
         ${PRIN} " %b %s " "${INFO}" "Configure local repositories"
         # Install v2ray
         mkdir -p packages
-        export V2RAY_VERSION="4.41.1-1"
         export V2RAY_REPO="https://github.com/kuoruan/openwrt-v2ray/releases/download/v${V2RAY_VERSION}/v2ray-core_${V2RAY_VERSION}_${ARCH}.ipk"
         wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray.ipk !"
         ${ECMD} "src v2ray-core file:packages" >> repositories.conf
+        # Install openclash
+        export OC_REPO="https://github.com/vernesong/OpenClash/releases/download/v${OC_VER}/luci-app-openclash_${OC_VER}_all.ipk"
+        wget -q -P packages/ ${OC_REPO} || error "Failed to download file:luci-app-openclash.ipk !"
+        ${ECMD} "src luci-app-openclash file:packages" >> repositories.conf
         # Install luci theme edge
         export EDGE_REPO="https://github.com/kiddin9/luci-theme-edge/releases/download/v2.5-19.07/luci-theme-edge_2.5_luci19.07.ipk"
         wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"

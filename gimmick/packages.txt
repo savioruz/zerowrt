@@ -51,6 +51,7 @@ luci
 luci-base
 luci-compat
 luci-app-openvpn
+luci-app-openclash
 luci-app-wireguard
 luci-theme-bootstrap
 luci-theme-material

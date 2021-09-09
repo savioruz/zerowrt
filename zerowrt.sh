@@ -195,8 +195,13 @@ LIBERNET_PREPARE () {
         # Install v2ray
         mkdir -p packages
         export V2RAY_VERSION="4.41.1-1"
-        wget -q -P packages/ https://github.com/kuoruan/openwrt-v2ray/releases/download/v${V2RAY_VERSION}/v2ray-core_${V2RAY_VERSION}_${ARCH}.ipk || error "Failed to download file:v2ray.ipk !"
+        export V2RAY_REPO="https://github.com/kuoruan/openwrt-v2ray/releases/download/v${V2RAY_VERSION}/v2ray-core_${V2RAY_VERSION}_${ARCH}.ipk"
+        wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray.ipk !"
         ${ECMD} "src v2ray-core file:packages" >> repositories.conf
+        # Install luci theme edge
+        export EDGE_REPO="https://github.com/kiddin9/luci-theme-edge/releases/download/v2.5-19.07/luci-theme-edge_2.5_luci19.07.ipk"
+        wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
+        ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
     ${PRIN} " %b %s " "${INFO}" "Install Libernet"
     ${PRIN} "%b" "${DONE}"
     ${SLP}

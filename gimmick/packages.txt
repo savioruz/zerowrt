@@ -8,6 +8,7 @@ curl
 coreutils
 coreutils-nohup
 coreutils-stdbuf
+-dnsmasq
 dnsmasq-full
 git
 git-http
@@ -80,4 +81,3 @@ v2ray-core
 wget
 xl2tpd
 zsh
--dnsmasq

@@ -192,6 +192,7 @@ LIBERNET_PREPARE () {
                 chmod +x "${bin}" || error "Failed to chmod !"
                 fi
             done < binaries.txt
+        ${PRIN} " %b %s " "${INFO}" "Configure local repositories"
         # Install v2ray
         mkdir -p packages
         export V2RAY_VERSION="4.41.1-1"
@@ -202,6 +203,8 @@ LIBERNET_PREPARE () {
         export EDGE_REPO="https://github.com/kiddin9/luci-theme-edge/releases/download/v2.5-19.07/luci-theme-edge_2.5_luci19.07.ipk"
         wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
         ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
+        ${SLP}
+        ${PRIN} "%b\\n" "${TICK}"
     ${PRIN} " %b %s " "${INFO}" "Install Libernet"
     ${PRIN} "%b" "${DONE}"
     ${SLP}
@@ -215,7 +218,7 @@ OPENWRT_BUILD () {
         sleep 2
         make image PROFILE="${INFO_MODEL}" \
         FILES="$(pwd)/files/" EXTRA_IMAGE_NAME="zerowrt" \
-        PACKAGES="${ZEROWRT_PACKAGES}" DISABLED_SERVICES="${ZEROWRT_DISABLED}"
+        PACKAGES="${ZEROWRT_PACKAGES}" DISABLED_SERVICES="${ZEROWRT_DISABLED}" || erroor "Failed to build image !"
     ${PRIN} " %b %s " "${INFO}" "Cleanup"
     # Back to first directory
     cd .. || error "Can't back to working directory !"

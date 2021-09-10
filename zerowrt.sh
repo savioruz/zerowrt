@@ -88,7 +88,7 @@ export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
                         "bcm2711")
                             export MODEL_ARCH="bcm2711"
                             export INFO_MODEL="rpi-4"
-                            export ARCH="aarch64_cortex-a53"
+                            export ARCH="aarch64_cortex-a72"
                             export MODELL="${MODEL_4}"
                             break
                             ;;

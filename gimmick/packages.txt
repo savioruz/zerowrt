@@ -17,10 +17,13 @@ htop
 iptables
 iptables-mod-tproxy
 iptables-mod-extra
+iptables-mod-filter
+iptables-mod-conntrack-extra
 ip6tables-mod-nat
 ipset
 ip-full
 jq
+kmod-ipt-nat6
 kmod-sound-arm-bcm2835
 kmod-sound-core
 kmod-tun
@@ -80,6 +83,7 @@ usb-modeswitch
 usbutils
 wireguard-tools
 v2ray-core
+whereis
 wget
 xl2tpd
 zsh

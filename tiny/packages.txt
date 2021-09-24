@@ -49,5 +49,6 @@ tar
 unzip
 usb-modeswitch
 usbutils
+whereis
 wget
 zsh

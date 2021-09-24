@@ -191,8 +191,8 @@ export HOME_DIR="${ROOT_DIR}/root"
 	${PRIN} "%b\\n" "${TICK}"
 }
 
-TUNNEL_PREPARE () {
-    # Install libernet proprietary
+LIBERNET_PREPARE () {
+        # Install libernet
         ${PRIN} " %b %s ... \n" "${INFO}" "Installing libernet"
         mkdir -p files/usr/bin
             wget -q https://github.com/lutfailham96/libernet/raw/main/binaries.txt || error "Failed to download file:binaries.txt !"
@@ -204,27 +204,39 @@ TUNNEL_PREPARE () {
                     chmod +x "${bin}" || error "Failed to chmod !"
                     fi
                 done < binaries.txt
-            ${PRIN} " %b %s " "${INFO}" "Configure local repositories"
-        # Install v2ray-core
+        # Install v2ray-core for libernet
             mkdir -p packages
             export V2RAY_REPO=$(curl -sL https://github.com/kuoruan/openwrt-v2ray/releases/latest | grep '/kuoruan/openwrt-v2ray/releases/download' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | grep 'v2ray-core_' | grep ${ARCH})
             wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray.ipk !"
             ${ECMD} "src v2ray-core file:packages" >> repositories.conf
+        ${PRIN} " %b %s " "${INFO}" "Install Libernet"
+        ${PRIN} "%b" "${DONE}"
+        ${SLP}
+        ${PRIN} " %b\\n" "${TICK}"
+}
+
+OPENCLASH_PREPARE () {
         # Install openclash
+        ${PRIN} " %b %s ... " "${INFO}" "Installing OpenClash"
             export OC_REPO=$(curl -sL https://github.com/vernesong/OpenClash/releases | grep 'luci-app-openclash_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
             wget -q -P packages/ ${OC_REPO} || error "Failed to download file:luci-app-openclash.ipk !"
             ${ECMD} "src luci-app-openclash file:packages" >> repositories.conf
-        # Install v2rayA
+        ${SLP}
+	    ${PRIN} "%b\\n" "${TICK}"
+}
+
+V2RAYA_PREPARE () {
+        # Install v2ray
+        ${PRIN} " %b %s ... \n" "${INFO}" "Installing v2rayA"
             export V2FLY_REPO=$(curl -sL https://github.com/v2fly/v2ray-core/releases/latest | grep 'v2ray-linux'| sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | grep ${AKA_ARCH} | grep -v '.dgst' | awk 'FNR <= 1')
-            export DIR_V2RAYA="files/etc/v2rayA"
-            # Install v2ray 
+            export DIR_V2RAYA="files/etc/v2raya"
             wget -q ${V2FLY_REPO} || error "Failed to download file:v2ray-linux from v2fly"
             mkdir -p ${DIR_V2RAYA}/bin || error "Failed to create directoy:${DIR_V2RAYA}/bin"
             unzip -d ${DIR_V2RAYA} v2ray-linux-${AKA_ARCH}.zip || error "Failed to decompressed file:v2ray.zip"
             cp ${DIR_V2RAYA}/v2ray ${DIR_V2RAYA}/v2ctl -t=${DIR_V2RAYA/bin} || error "Failed to install v2ray"
             chmod +x ${DIR_V2RAYA}/bin/v2ray || error "Failed to chmod file:v2ray"
             chmod +x ${DIR_V2RAYA}/bin/v2ctl || error "Failed to chmod file:v2ctl"
-            # Install geodata and set v2rayA
+        # Install geodata and set v2rayA
             export V2RAYA_REPO=$(curl -sL https://github.com/v2rayA/v2rayA/releases/latest | grep 'v2raya_linux'| sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | grep ${SHORT_ARCH}_ | awk 'FNR <= 1')
             export GEO_REPO="https://github.com/v2rayA/dist-v2ray-rules-dat/blob/master/"
             export GEO_FILE="geoip.dat geosite.dat LoyalsoldierSite.dat"
@@ -235,16 +247,19 @@ TUNNEL_PREPARE () {
                 wget -q -O files/usr/share/v2ray/ ${GEO_REPO}/${GEO_FILE} || error "Failed to download file:geodata"
             done
             chmod +x files/etc/init.d/v2raya || error "Failed to chmod file:init v2raya"
+        ${PRIN} " %b %s " "${INFO}" "Install v2rayA"
+        ${PRIN} "%b" "${DONE}"
+        ${SLP}
+        ${PRIN} " %b\\n" "${TICK}"
+}
+
+ADDITIONAL_PREPARE () {
         # Install luci theme edge
             export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
             wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
             ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
             ${SLP}
             ${PRIN} "%b\\n" "${TICK}"
-    ${PRIN} " %b %s " "${INFO}" "Install Libernet"
-    ${PRIN} "%b" "${DONE}"
-    ${SLP}
-	${PRIN} " %b\\n" "${TICK}"
 }
 
 # Cook the image
@@ -302,7 +317,10 @@ main () {
     if [[ "${Ztype}" == "tiny" ]] ; then
         OPENWRT_BUILD
     elif [[ "${Ztype}" == "gimmick" ]] ; then
-        TUNNEL_PREPARE
+        LIBERNET_PREPARE
+        OPENCLASH_PREPARE
+        V2RAYA_PREPARE
+        ADDITIONAL_PREPARE
         OPENWRT_BUILD
     fi
 }

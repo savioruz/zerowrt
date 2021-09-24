@@ -66,6 +66,8 @@ export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
                             export MODEL_ARCH="bcm2708"
                             export INFO_MODEL="rpi"
                             export ARCH="arm_arm1176jzf-s_vfp"
+                            export AKA_ARCH="arm32-v6"
+                            export SHORT_ARCH="arm"
                             export MODELL="${MODEL_1}"
                             break
                             ;;
@@ -73,6 +75,8 @@ export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
                             export MODEL_ARCH="bcm2709"
                             export INFO_MODEL="rpi-2"
                             export ARCH="arm_cortex-a7_neon-vfpv4"
+                            export AKA_ARCH="arm32-v7a"
+                            export SHORT_ARCH="arm"
                             export MODELL="${MODEL_2}"
                             break
                             ;;
@@ -80,6 +84,8 @@ export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
                             export MODEL_ARCH="bcm2710"
                             export INFO_MODEL="rpi-3"
                             export ARCH="aarch64_cortex-a53"
+                            export AKA_ARCH="arm64-v8a"
+                            export SHORT_ARCH="arm64"
                             export MODELL="${MODEL_3}"
                             break
                             ;;
@@ -87,6 +93,8 @@ export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
                             export MODEL_ARCH="bcm2711"
                             export INFO_MODEL="rpi-4"
                             export ARCH="aarch64_cortex-a72"
+                            export AKA_ARCH="arm64-v8a"
+                            export SHORT_ARCH="arm"
                             export MODELL="${MODEL_4}"
                             break
                             ;;
@@ -185,33 +193,54 @@ export HOME_DIR="${ROOT_DIR}/root"
 
 TUNNEL_PREPARE () {
     # Install libernet proprietary
-    ${PRIN} " %b %s ... \n" "${INFO}" "Installing libernet"
-        wget -q https://github.com/lutfailham96/libernet/raw/main/binaries.txt || error "Failed to download file:binaries.txt !"
-            while IFS= read -r line; do
-                if ! which ${line} > /dev/null 2>&1 ; then
-                bin="files/usr/bin/${line}"
-                mkdir -p files/usr/bin
-                ${ECMD} "\e[0;34mInstalling\e[0m ${line} ..."
-                wget -q -O "${bin}" "https://github.com/lutfailham96/libernet-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download binaries !"
-                chmod +x "${bin}" || error "Failed to chmod !"
-                fi
-            done < binaries.txt
-        ${PRIN} " %b %s " "${INFO}" "Configure local repositories"
-        # Install v2ray
-        mkdir -p packages
-        export V2RAY_REPO="https://github.com/kuoruan/openwrt-v2ray/releases/download/v${V2RAY_VERSION}/v2ray-core_${V2RAY_VERSION}_${ARCH}.ipk"
-        wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray.ipk !"
-        ${ECMD} "src v2ray-core file:packages" >> repositories.conf
+        ${PRIN} " %b %s ... \n" "${INFO}" "Installing libernet"
+        mkdir -p files/usr/bin
+            wget -q https://github.com/lutfailham96/libernet/raw/main/binaries.txt || error "Failed to download file:binaries.txt !"
+                while IFS= read -r line; do
+                    if ! which ${line} > /dev/null 2>&1 ; then
+                    bin="files/usr/bin/${line}"
+                    ${ECMD} "\e[0;34mInstalling\e[0m ${line} ..."
+                    wget -q -O "${bin}" "https://github.com/lutfailham96/libernet-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download binaries !"
+                    chmod +x "${bin}" || error "Failed to chmod !"
+                    fi
+                done < binaries.txt
+            ${PRIN} " %b %s " "${INFO}" "Configure local repositories"
+        # Install v2ray-core
+            mkdir -p packages
+            export V2RAY_REPO=$(curl -sL https://github.com/kuoruan/openwrt-v2ray/releases/latest | grep '/kuoruan/openwrt-v2ray/releases/download' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | grep 'v2ray-core_' | grep ${ARCH})
+            wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray.ipk !"
+            ${ECMD} "src v2ray-core file:packages" >> repositories.conf
         # Install openclash
-        export OC_REPO=$(curl -sL https://github.com/vernesong/OpenClash/releases | grep 'luci-app-openclash_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
-        wget -q -P packages/ ${OC_REPO} || error "Failed to download file:luci-app-openclash.ipk !"
-        ${ECMD} "src luci-app-openclash file:packages" >> repositories.conf
+            export OC_REPO=$(curl -sL https://github.com/vernesong/OpenClash/releases | grep 'luci-app-openclash_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
+            wget -q -P packages/ ${OC_REPO} || error "Failed to download file:luci-app-openclash.ipk !"
+            ${ECMD} "src luci-app-openclash file:packages" >> repositories.conf
+        # Install v2rayA
+            export V2FLY_REPO=$(curl -sL https://github.com/v2fly/v2ray-core/releases/latest | grep 'v2ray-linux'| sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | grep ${AKA_ARCH} | grep -v '.dgst' | awk 'FNR <= 1')
+            export DIR_V2RAYA="files/etc/v2rayA"
+            # Install v2ray 
+            wget -q ${V2FLY_REPO} || error "Failed to download file:v2ray-linux from v2fly"
+            mkdir -p ${DIR_V2RAYA}/bin || error "Failed to create directoy:${DIR_V2RAYA}/bin"
+            unzip -d ${DIR_V2RAYA} v2ray-linux-${AKA_ARCH}.zip || error "Failed to decompressed file:v2ray.zip"
+            cp ${DIR_V2RAYA}/v2ray ${DIR_V2RAYA}/v2ctl -t=${DIR_V2RAYA/bin} || error "Failed to install v2ray"
+            chmod +x ${DIR_V2RAYA}/bin/v2ray || error "Failed to chmod file:v2ray"
+            chmod +x ${DIR_V2RAYA}/bin/v2ctl || error "Failed to chmod file:v2ctl"
+            # Install geodata and set v2rayA
+            export V2RAYA_REPO=$(curl -sL https://github.com/v2rayA/v2rayA/releases/latest | grep 'v2raya_linux'| sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | grep ${SHORT_ARCH}_ | awk 'FNR <= 1')
+            export GEO_REPO="https://github.com/v2rayA/dist-v2ray-rules-dat/blob/master/"
+            export GEO_FILE="geoip.dat geosite.dat LoyalsoldierSite.dat"
+            export WDIR_V2RAYA="files/usr/bin/v2raya"
+            wget -q -O ${WDIR_V2RAYA} ${V2RAYA_REPO} || error "Failed to download file:v2rayA"
+            chmod +x ${WDIR_V2RAYA} || error "Failed to chmod file:v2raya"
+            for p in ${GEO_FILE} ; do
+                wget -q -O files/usr/share/v2ray/ ${GEO_REPO}/${GEO_FILE} || error "Failed to download file:geodata"
+            done
+            chmod +x files/etc/init.d/v2raya || error "Failed to chmod file:init v2raya"
         # Install luci theme edge
-        export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
-        wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
-        ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
-        ${SLP}
-        ${PRIN} "%b\\n" "${TICK}"
+            export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
+            wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
+            ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
+            ${SLP}
+            ${PRIN} "%b\\n" "${TICK}"
     ${PRIN} " %b %s " "${INFO}" "Install Libernet"
     ${PRIN} "%b" "${DONE}"
     ${SLP}
@@ -225,7 +254,7 @@ OPENWRT_BUILD () {
         sleep 2
         make image PROFILE="${INFO_MODEL}" \
         FILES="$(pwd)/files/" EXTRA_IMAGE_NAME="zerowrt" \
-        PACKAGES="${ZEROWRT_PACKAGES}" DISABLED_SERVICES="${ZEROWRT_DISABLED}" || erroor "Failed to build image !"
+        PACKAGES="${ZEROWRT_PACKAGES}" DISABLED_SERVICES="${ZEROWRT_DISABLED}" || error "Failed to build image !"
     ${PRIN} " %b %s " "${INFO}" "Cleanup"
     # Back to first directory
     cd .. || error "Can't back to working directory !"

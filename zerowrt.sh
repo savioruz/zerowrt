@@ -17,8 +17,6 @@ export OPENWRT_ORIGINAL_URL="https://downloads.openwrt.org/releases"
 export OPENWRT_RASPI="bcm27xx"
 # V2ray Version
 export V2RAY_VERSION="4.41.1-1"
-# Openclash Version
-export OC_VER="0.43.04-beta"
 
 error() {
     ${PRIN} "$1 ${CROSS}"
@@ -185,7 +183,7 @@ export HOME_DIR="${ROOT_DIR}/root"
 	${PRIN} "%b\\n" "${TICK}"
 }
 
-LIBERNET_PREPARE () {
+TUNNEL_PREPARE () {
     # Install libernet proprietary
     ${PRIN} " %b %s ... \n" "${INFO}" "Installing libernet"
         wget -q https://github.com/lutfailham96/libernet/raw/main/binaries.txt || error "Failed to download file:binaries.txt !"
@@ -205,11 +203,11 @@ LIBERNET_PREPARE () {
         wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray.ipk !"
         ${ECMD} "src v2ray-core file:packages" >> repositories.conf
         # Install openclash
-        export OC_REPO="https://github.com/vernesong/OpenClash/releases/download/v${OC_VER}/luci-app-openclash_${OC_VER}_all.ipk"
+        export OC_REPO=$(curl -sL https://github.com/vernesong/OpenClash/releases | grep 'luci-app-openclash_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
         wget -q -P packages/ ${OC_REPO} || error "Failed to download file:luci-app-openclash.ipk !"
         ${ECMD} "src luci-app-openclash file:packages" >> repositories.conf
         # Install luci theme edge
-        export EDGE_REPO="https://github.com/kiddin9/luci-theme-edge/releases/download/v2.5-19.07/luci-theme-edge_2.5_luci19.07.ipk"
+        export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
         wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
         ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
         ${SLP}
@@ -275,7 +273,7 @@ main () {
     if [[ "${Ztype}" == "tiny" ]] ; then
         OPENWRT_BUILD
     elif [[ "${Ztype}" == "gimmick" ]] ; then
-        LIBERNET_PREPARE
+        TUNNEL_PREPARE
         OPENWRT_BUILD
     fi
 }

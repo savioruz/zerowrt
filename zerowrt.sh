@@ -233,18 +233,19 @@ V2RAYA_PREPARE () {
             wget -q ${V2FLY_REPO} || error "Failed to download file:v2ray-linux from v2fly"
             mkdir -p ${DIR_V2RAYA}/bin || error "Failed to create directoy:${DIR_V2RAYA}/bin"
             unzip -d ${DIR_V2RAYA} v2ray-linux-${AKA_ARCH}.zip || error "Failed to decompressed file:v2ray.zip"
-            cp ${DIR_V2RAYA}/v2ray ${DIR_V2RAYA}/v2ctl -t=${DIR_V2RAYA/bin} || error "Failed to install v2ray"
+            cp ${DIR_V2RAYA}/v2ray ${DIR_V2RAYA}/bin || error "Failed to install v2ray"
+            cp ${DIR_V2RAYA}/v2ctl ${DIR_V2RAYA}/bin || error "Failed to install v2ctl"
             chmod +x ${DIR_V2RAYA}/bin/v2ray || error "Failed to chmod file:v2ray"
             chmod +x ${DIR_V2RAYA}/bin/v2ctl || error "Failed to chmod file:v2ctl"
         # Install geodata and set v2rayA
             export V2RAYA_REPO=$(curl -sL https://github.com/v2rayA/v2rayA/releases/latest | grep 'v2raya_linux'| sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | grep ${SHORT_ARCH}_ | awk 'FNR <= 1')
-            export GEO_REPO="https://github.com/v2rayA/dist-v2ray-rules-dat/blob/master/"
-            export GEO_FILE="geoip.dat geosite.dat LoyalsoldierSite.dat"
+            export GEO_REPO="https://github.com/v2rayA/dist-v2ray-rules-dat/blob/master"
             export WDIR_V2RAYA="files/usr/bin/v2raya"
             wget -q -O ${WDIR_V2RAYA} ${V2RAYA_REPO} || error "Failed to download file:v2rayA"
             chmod +x ${WDIR_V2RAYA} || error "Failed to chmod file:v2raya"
-            for p in ${GEO_FILE} ; do
-                wget -q -O files/usr/share/v2ray/ ${GEO_REPO}/${GEO_FILE} || error "Failed to download file:geodata"
+            mkdir -p files/usr/share/v2ray || error "Failed to create dir:files/usr/share/v2ray"
+            for p in geoip.dat geosite.dat ; do
+                wget -q -O files/usr/share/v2ray/${p} ${GEO_REPO}/${p} || error "Failed to download file:geodata"
             done
             chmod +x files/etc/init.d/v2raya || error "Failed to chmod file:init v2raya"
         ${PRIN} " %b %s " "${INFO}" "Install v2rayA"
@@ -258,8 +259,6 @@ ADDITIONAL_PREPARE () {
             export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
             wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
             ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
-            ${SLP}
-            ${PRIN} "%b\\n" "${TICK}"
 }
 
 # Cook the image
@@ -268,7 +267,7 @@ OPENWRT_BUILD () {
     ${PRIN} " %b %s ... \n" "${INFO}" "Ready to cook"
         sleep 2
         make image PROFILE="${INFO_MODEL}" \
-        FILES="$(pwd)/files/" EXTRA_IMAGE_NAME="zerowrt" \
+        FILES="$(pwd)/files/" EXTRA_IMAGE_NAME="zerowrt-${Ztype}" \
         PACKAGES="${ZEROWRT_PACKAGES}" DISABLED_SERVICES="${ZEROWRT_DISABLED}" || error "Failed to build image !"
     ${PRIN} " %b %s " "${INFO}" "Cleanup"
     # Back to first directory

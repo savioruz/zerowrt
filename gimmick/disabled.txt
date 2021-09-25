@@ -3,4 +3,5 @@ openvpn
 stubby
 shadowsocks-libev
 stunnel
+v2raya
 xl2tpd

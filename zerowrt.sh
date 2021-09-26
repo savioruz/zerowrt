@@ -160,8 +160,8 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
     ${PRIN} " %b %s ... " "${INFO}" "Preparing requirements"
-        cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt !"
-        cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt !"
+        #cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt !"
+        #cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt !"
         export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))"
         export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
     ${SLP}
@@ -267,8 +267,10 @@ OPENWRT_BUILD () {
     ${PRIN} " %b %s ... \n" "${INFO}" "Ready to cook"
         sleep 2
         make image PROFILE="${INFO_MODEL}" \
-        FILES="$(pwd)/files/" EXTRA_IMAGE_NAME="zerowrt-${Ztype}" \
-        PACKAGES="${ZEROWRT_PACKAGES}" DISABLED_SERVICES="${ZEROWRT_DISABLED}" || error "Failed to build image !"
+        FILES="$(pwd)/files/" \
+        EXTRA_IMAGE_NAME="zerowrt-${Ztype}" \
+        PACKAGES="${ZEROWRT_PACKAGES}" \
+        DISABLED_SERVICES="${ZEROWRT_DISABLED}" || error "Failed to build image !"
     ${PRIN} " %b %s " "${INFO}" "Cleanup"
     # Back to first directory
     cd .. || error "Can't back to working directory !"

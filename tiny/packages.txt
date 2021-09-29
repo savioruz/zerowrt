@@ -44,6 +44,7 @@ nano
 openssh-client
 openvpn-openssl
 openvpn-easy-rsa
+php7-cli
 screen
 stunnel
 tar

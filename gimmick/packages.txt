@@ -67,6 +67,7 @@ openssh-client
 openvpn-openssl
 openvpn-easy-rsa
 php7
+php7-cli
 php7-cgi
 php7-mod-json
 php7-mod-session

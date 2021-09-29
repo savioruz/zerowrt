@@ -105,12 +105,15 @@ export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
                 done
 }
 
-OPENWRT_SIZE () {
+OPENWRT_CUSTOM () {
     # Set partition size of kernel
     read -r -p " ${QST} Write size of /boot [>30 Mb] : " BOOTFS
     # Set partition size of /rootfs
-    read -r -p " ${QST} Write size of /root [>200 Mb] : " ROOTFS
+    read -r -p " ${QST} Write size of /root [>300 Mb] : " ROOTFS
+    # Set ip address
+    read -r -p " ${QST} Write ip address you want to use [192.168.1.1] : " IP_ADDR
 }
+
 ZEROWRT_TYPE () {
     ${SLP}
     PS3=" ${QST} Select ZEROWRT type : "
@@ -182,6 +185,7 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${PRIN} " %b %s ... " "${INFO}" "Configure data"
         sed -i -e "s/CONFIG_TARGET_KERNEL_PARTSIZE=.*/CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}/" .config || error "Failed to change bootfs size !"
         sed -i -e "s/CONFIG_TARGET_ROOTFS_PARTSIZE=.*/CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}/" .config || error "Failed to change rootfs size !"
+        sed -i 's/4.3.2.1/${IP_ADDR}/g' files/etc/config/network || error "Failed to change openwrt ip address"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
     ${PRIN} " %b %s ... " "${INFO}" "Installing ohmyzsh"
@@ -336,7 +340,7 @@ OPENWRT_BUILD () {
 main () {
     clear ; OPENWRT_VERSION
     clear ; OPENWRT_MODEL
-    clear ; OPENWRT_SIZE
+    clear ; OPENWRT_CUSTOM
     clear ; ZEROWRT_TYPE
     clear ; OPENWRT_PREPARE
     # Print info version

@@ -189,11 +189,54 @@ export HOME_DIR="${ROOT_DIR}/root"
         git clone -q ${OMZ_REPO} files/root/.oh-my-zsh || error "Failed to clone ${OMZ_REPO}"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
+    ${PRIN} " %b %s ... " "${INFO}" "Installing mikhmon"
+        export MIKHMON_REPO="https://github.com/laksa19/mikhmonv3.git"
+        git clone -q ${MIKHMON_REPO} files/www/mikhmon || error "Failed to clone ${MIKHMON_REPO}"
+        sed -i 's/str_replace(" ","_",date("Y-m-d H:i:s"))/str_replace(date)/g' files/www/mikhmon/index.php || error "Failed to mod:mikhmon/index.php"
+        sed -i 's/strtolower(date("M"))/strtolower(date)/g' files/www/mikhmon/include/menu.php || error "Failed to mod:mikhmon/menu.php"
+        sed -i 's/strtolowerdate("Y"))/strtolower(date)/g' files/www/mikhmon/include/menu.php || error "Failed to mod:mikhmon/menu.php"
+        cat > files/etc/init.d/mikhmon << EOF
+#!/bin/sh /etc/rc.common
+# Mikhmon init script beta (C) 2021 ZeroWRT
+# Copyright (C) 2007 OpenWrt.org
+
+START=69
+STOP=01
+USE_PROCD=1
+
+start_service() {
+    procd_open_instance
+    procd_set_param command php-cli -S 0.0.0.0:4433 -t /www/mikhmon
+	echo "Mikhmon Started"
+    procd_close_instance
+}
+
+stop_service() {
+	kill $(ps | grep 'php-cli -S 0.0.0.0:4433 -t /www/mikhmon' | awk '{print $1}' | awk 'FNR <= 1')
+	echo "Mikhmon Stopped"
+}
+
+reload_service() {
+	if pgrep "php-cli" ; then
+	 stop
+	 start
+	else
+	 start	
+	fi
+}
+EOF
+    chmod +x files/etc/init.d/mikhmon || error "Failed to chmod file:mikhmon.init"
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
 }
 
 LIBERNET_PREPARE () {
         # Install libernet
         ${PRIN} " %b %s ... \n" "${INFO}" "Installing libernet"
+        export LIBERNET_REPO="https://github.com/lutfailham96/libernet.git"
+        mkdir -p files/www/libernet || error "Failed to create libernet dir"
+        git clone -q ${LIBERNET_REPO} || error "Failed to clone repo:${LIBERNET_REPO}"
+        cp -arf libernet/web/* files/www/libernet || error "Failed to install libernet"
         mkdir -p files/usr/bin
             wget -q https://github.com/lutfailham96/libernet/raw/main/binaries.txt || error "Failed to download file:binaries.txt !"
                 while IFS= read -r line; do

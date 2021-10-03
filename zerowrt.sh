@@ -185,7 +185,7 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${PRIN} " %b %s ... " "${INFO}" "Configure data"
         sed -i -e "s/CONFIG_TARGET_KERNEL_PARTSIZE=.*/CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}/" .config || error "Failed to change bootfs size !"
         sed -i -e "s/CONFIG_TARGET_ROOTFS_PARTSIZE=.*/CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}/" .config || error "Failed to change rootfs size !"
-        sed -i 's/4.3.2.1/${IP_ADDR}/g' files/etc/config/network || error "Failed to change openwrt ip address"
+        sed -i -e "s/4.3.2.1/${IP_ADDR}/" files/etc/config/network || error "Failed to change openwrt ip address"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
     ${PRIN} " %b %s ... " "${INFO}" "Installing ohmyzsh"
@@ -197,9 +197,9 @@ export HOME_DIR="${ROOT_DIR}/root"
         export MIKHMON_REPO="https://github.com/laksa19/mikhmonv3.git"
         mkdir -p files/etc/init.d || error "Failed to create dir:init.d"
         git clone -q ${MIKHMON_REPO} files/www/mikhmon || error "Failed to clone ${MIKHMON_REPO}"
-        sed -i 's/str_replace(" ","_",date("Y-m-d H:i:s"))/str_replace(date)/g' files/www/mikhmon/index.php || error "Failed to mod:mikhmon/index.php"
-        sed -i 's/strtolower(date("M"))/strtolower(date)/g' files/www/mikhmon/include/menu.php || error "Failed to mod:mikhmon/menu.php"
-        sed -i 's/strtolowerdate("Y"))/strtolower(date)/g' files/www/mikhmon/include/menu.php || error "Failed to mod:mikhmon/menu.php"
+        #sed -i 's/str_replace(" ","_",date("Y-m-d H:i:s"))/str_replace(date)/g' files/www/mikhmon/index.php || error "Failed to mod:mikhmon/index.php"
+        #sed -i 's/strtolower(date("M"))/strtolower(date)/g' files/www/mikhmon/include/menu.php || error "Failed to mod:mikhmon/menu.php"
+        #sed -i 's/strtolowerdate("Y"))/strtolower(date)/g' files/www/mikhmon/include/menu.php || error "Failed to mod:mikhmon/menu.php"
         cat > files/etc/init.d/mikhmon << EOF
 #!/bin/sh /etc/rc.common
 # Mikhmon init script beta (C) 2021 ZeroWRT

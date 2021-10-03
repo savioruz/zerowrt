@@ -4,8 +4,6 @@ chat
 comgt
 comgt-ncm
 curl
-coreutils
-coreutils-stdbuf
 -dnsmasq
 dnsmasq-full
 git
@@ -53,4 +51,5 @@ usb-modeswitch
 usbutils
 whereis
 wget
+zoneinfo-simple
 zsh

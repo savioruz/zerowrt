@@ -88,4 +88,5 @@ v2ray-core
 whereis
 wget
 xl2tpd
+zoneinfo-simple
 zsh

@@ -41,11 +41,11 @@ OPENWRT_VERSION () {
         error "Operation Canceled"
     fi
 
-	if [ ${DIALOG_VERSION} = 19.* ] ; then
+	if [[ "${DIALOG_VERSION}" == "19.*" ]] ; then
 		export OPENWRT_RASPI="brcm2708"
-	elif [ ${DIALOG_VERSION} = 18.* ] ; then
+	elif [[ "${DIALOG_VERSION}" == "18.*" ]] ; then
 		export OPENWRT_RASPI="brcm2708"
-	elif [ ${DIALOG_VERSION} = 21.* ] ; then
+	elif [[ "${DIALOG_VERSION}" == "21.*" ]] ; then
 		export OPENWRT_RASPI="bcm27xx"
 	fi
 }
@@ -72,25 +72,25 @@ OPENWRT_MODEL () {
         error "Operation Canceled"
     fi
 
-    if [ ${DIALOG_MODEL} = bcm2708 ] ; then
+    if [[ "${DIALOG_MODEL}" == "bcm2708" ]] ; then
         export INFO_MODEL="rpi"
         export ARCH="arm_arm1176jzf-s_vfp"
         export AKA_ARCH="arm32-v6"
         export SHORT_ARCH="arm"
         export MODELL="${MODEL_1}"
-    elif [ ${DIALOG_MODEL} = bcm2709 ] ; then
+    elif [[ "${DIALOG_MODEL}" == "bcm2709" ]] ; then
 		export INFO_MODEL="rpi-2"
         export ARCH="arm_cortex-a7_neon-vfpv4"
         export AKA_ARCH="arm32-v7a"
         export SHORT_ARCH="arm"
         export MODELL="${MODEL_2}"
-	elif [ ${DIALOG_MODEL} = bcm2710 ] ; then
+	elif [[ "${DIALOG_MODEL}" == "bcm2710" ]] ; then
 		export INFO_MODEL="rpi-3"
 		export ARCH="aarch64_cortex-a53"
         export AKA_ARCH="arm64-v8a"
         export SHORT_ARCH="arm64"
         export MODELL="${MODEL_3}"
-	elif [ ${DIALOG_MODEL} = bcm2711 ] ; then
+	elif [[ "${DIALOG_MODEL}" == "bcm2711" ]] ; then
 		export INFO_MODEL="rpi-4"
 		export ARCH="aarch64_cortex-a72"
         export AKA_ARCH="arm64-v8a"

@@ -29,8 +29,9 @@ error() {
 # Select OpenWrt version from official repository
 OPENWRT_VERSION () {
     DIALOG_VERSION=$(whiptail --title "Openwrt Version" \
-		--radiolist "Choose your version" ${R} ${C} 2 \
-		"19.07.8" "Old Stable Release" ON \
+		--radiolist "Choose your version" ${R} ${C} 3 \
+		"21.02.0" "Latest Stable Release" ON \
+		"19.07.8" "Old Stable Release" OFF \
 		"18.06.9" "Old Stable Archive"  OFF \
     3>&1 1>&2 2>&3)
 
@@ -55,13 +56,14 @@ OPENWRT_MODEL () {
 	export MODEL_1="Pi 1 (32 bit) compatible on pi 0,0w,1B,1B+"
 	export MODEL_2="Pi 2 (32 bit) compatible on pi 2B,2B+,3B,3B+,CM3"
 	export MODEL_3="Pi 3 (64 bit) compatible on pi 2Brev2,3B,3B+,CM3"
-	# export MODEL_4="Pi 4 (64 bit) compatible on pi 4B,CM4"
+	export MODEL_4="Pi 4 (64 bit) compatible on pi 4B,CM4"
 
     DIALOG_MODEL=$(whiptail --title "Raspberry Pi Model" \
-		--radiolist "Choose your raspi model" ${R} ${C} 3 \
+		--radiolist "Choose your raspi model" ${R} ${C} 4 \
 		"bcm2708" "${MODEL_1}" OFF \
 		"bcm2709" "${MODEL_2}"  OFF \
 		"bcm2710" "${MODEL_3}"  OFF \
+		"bcm2711" "${MODEL_4}"  OFF \
 		3>&1 1>&2 2>&3)
 
     if [ $? = 0 ] ; then
@@ -88,6 +90,12 @@ OPENWRT_MODEL () {
         export AKA_ARCH="arm64-v8a"
         export SHORT_ARCH="arm64"
         export MODELL="${MODEL_3}"
+	elif [ ${DIALOG_MODEL} = bcm2711 ] ; then
+		export INFO_MODEL="rpi-4"
+		export ARCH="aarch64_cortex-a72"
+        export AKA_ARCH="arm64-v8a"
+        export SHORT_ARCH="arm"
+        export MODELL="${MODEL_4}"
 	fi
 }
 

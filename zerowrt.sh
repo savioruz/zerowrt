@@ -110,9 +110,6 @@ OPENWRT_BOOTFS () {
     else
         error "Operation Canceled"
     fi
-
-    # Set ip address
-    read -r -p " ${QST} Write ip address you want to use [192.168.1.1] : " IP_ADDR
 }
 
 OPENWRT_ROOTFS () {

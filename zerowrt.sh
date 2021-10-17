@@ -13,134 +13,151 @@ export INFO="[i]"
 export QST="[?]"
 export DONE="${COL_LIGHT_GREEN} done !${CR}"
 export SLP="sleep 0.69s"
+export R=20
+export C=70
 export OPENWRT_ORIGINAL_URL="https://downloads.openwrt.org/releases"
-export OPENWRT_RASPI="bcm27xx"
+# export OPENWRT_RASPI="bcm27xx"
+# export OPENWRT_RASPI_OLD="brcm2708"
 # V2ray Version
 export V2RAY_VERSION="4.41.1-1"
 
 error() {
-    ${PRIN} "$1 ${CROSS}"
+    ${PRIN} "$1 ! ${CROSS}"
     exit
 }
 
 # Select OpenWrt version from official repository
 OPENWRT_VERSION () {
-    ${ECMD}
-    PS3=" ${QST} Select version : "
-    opts1=("21.02.0")
-        select opt in "${opts1[@]}"
-        do
-            case $opt in
-                "21.02.0")
-                    export OPENWRT_VERZION="21.02.0"
-                    break
-                    ;;
-                *)
-                    ${ECMD} "invalid option $REPLY"
-                    ;;
-            esac
-        done
+    DIALOG_VERSION=$(whiptail --title "Openwrt Version" \
+		--radiolist "Choose your version" ${R} ${C} 2 \
+		"19.07.8" "Old Stable Release" ON \
+		"18.06.9" "Old Stable Archive"  OFF \
+    3>&1 1>&2 2>&3)
+
+    if [ $? = 0 ] ; then
+        export OPENWRT_VERZION=${DIALOG_VERSION}
+    else
+        error "Operation Canceled"
+    fi
+
+	if [ ${DIALOG_VERSION} = 19.* ] ; then
+		export OPENWRT_RASPI="brcm2708"
+	elif [ ${DIALOG_VERSION} = 18.* ] ; then
+		export OPENWRT_RASPI="brcm2708"
+	elif [ ${DIALOG_VERSION} = 21.* ] ; then
+		export OPENWRT_RASPI="bcm27xx"
+	fi
 }
+
 
 # Select Raspberry Pi Model
 OPENWRT_MODEL () {
-export MODEL_1="Raspberry Pi 1 (32 bit) compatible on pi 0,0w,1B,1B+"
-export MODEL_2="Raspberry Pi 2 (32 bit) compatible on pi 2B,2B+,3B,3B+,CM3,4B,CM4"
-export MODEL_3="Raspberry Pi 3 (64 bit) compatible on pi 2Brev2,3B,3B+,CM3"
-export MODEL_4="Raspberry Pi 4 (64 bit) compatible on pi 4B,CM4"
-        ${ECMD} "   ───────────────────────────────────────────────────────────────────────────────"
-        ${ECMD} "   │  Model  │                           Descriptions                            │"
-        ${ECMD} "   ───────────────────────────────────────────────────────────────────────────────"
-        ${ECMD} "   │ bcm2708 │ ${MODEL_1}              │"
-        ${ECMD} "   │ bcm2709 │ ${MODEL_2} │"
-        ${ECMD} "   │ bcm2710 │ ${MODEL_3}        │"
-        ${ECMD} "   │ bcm2711 │ ${MODEL_4}                   │"
-        ${ECMD} "   ───────────────────────────────────────────────────────────────────────────────"
-        ${ECMD}
-            PS3=" ${QST} Select Raspberry Pi model : "
-            opts2=("bcm2708" "bcm2709" "bcm2710" "bcm2711")
-                select opt in "${opts2[@]}"
-                do
-                    case $opt in
-                        "bcm2708")
-                            export MODEL_ARCH="bcm2708"
-                            export INFO_MODEL="rpi"
-                            export ARCH="arm_arm1176jzf-s_vfp"
-                            export AKA_ARCH="arm32-v6"
-                            export SHORT_ARCH="arm"
-                            export MODELL="${MODEL_1}"
-                            break
-                            ;;
-                        "bcm2709")
-                            export MODEL_ARCH="bcm2709"
-                            export INFO_MODEL="rpi-2"
-                            export ARCH="arm_cortex-a7_neon-vfpv4"
-                            export AKA_ARCH="arm32-v7a"
-                            export SHORT_ARCH="arm"
-                            export MODELL="${MODEL_2}"
-                            break
-                            ;;
-                        "bcm2710")
-                            export MODEL_ARCH="bcm2710"
-                            export INFO_MODEL="rpi-3"
-                            export ARCH="aarch64_cortex-a53"
-                            export AKA_ARCH="arm64-v8a"
-                            export SHORT_ARCH="arm64"
-                            export MODELL="${MODEL_3}"
-                            break
-                            ;;
-                        "bcm2711")
-                            export MODEL_ARCH="bcm2711"
-                            export INFO_MODEL="rpi-4"
-                            export ARCH="aarch64_cortex-a72"
-                            export AKA_ARCH="arm64-v8a"
-                            export SHORT_ARCH="arm"
-                            export MODELL="${MODEL_4}"
-                            break
-                            ;;
-                        *)
-                            ${ECMD} "invalid option $REPLY"
-                            ;;
-                    esac
-                done
+	export MODEL_1="Pi 1 (32 bit) compatible on pi 0,0w,1B,1B+"
+	export MODEL_2="Pi 2 (32 bit) compatible on pi 2B,2B+,3B,3B+,CM3"
+	export MODEL_3="Pi 3 (64 bit) compatible on pi 2Brev2,3B,3B+,CM3"
+	# export MODEL_4="Pi 4 (64 bit) compatible on pi 4B,CM4"
+
+    DIALOG_MODEL=$(whiptail --title "Raspberry Pi Model" \
+		--radiolist "Choose your raspi model" ${R} ${C} 3 \
+		"bcm2708" "${MODEL_1}" OFF \
+		"bcm2709" "${MODEL_2}"  OFF \
+		"bcm2710" "${MODEL_3}"  OFF \
+		3>&1 1>&2 2>&3)
+
+    if [ $? = 0 ] ; then
+        export MODEL_ARCH=${DIALOG_MODEL}
+    else
+        error "Operation Canceled"
+    fi
+
+    if [ ${DIALOG_MODEL} = bcm2708 ] ; then
+        export INFO_MODEL="rpi"
+        export ARCH="arm_arm1176jzf-s_vfp"
+        export AKA_ARCH="arm32-v6"
+        export SHORT_ARCH="arm"
+        export MODELL="${MODEL_1}"
+    elif [ ${DIALOG_MODEL} = bcm2709 ] ; then
+		export INFO_MODEL="rpi-2"
+        export ARCH="arm_cortex-a7_neon-vfpv4"
+        export AKA_ARCH="arm32-v7a"
+        export SHORT_ARCH="arm"
+        export MODELL="${MODEL_2}"
+	elif [ ${DIALOG_MODEL} = bcm2710 ] ; then
+		export INFO_MODEL="rpi-3"
+		export ARCH="aarch64_cortex-a53"
+        export AKA_ARCH="arm64-v8a"
+        export SHORT_ARCH="arm64"
+        export MODELL="${MODEL_3}"
+	fi
 }
 
-OPENWRT_CUSTOM () {
-    # Set partition size of kernel
-    read -r -p " ${QST} Write size of /boot [>30 Mb] : " BOOTFS
-    # Set partition size of /rootfs
-    read -r -p " ${QST} Write size of /root [>300 Mb] : " ROOTFS
+OPENWRT_BOOTFS () {
+	DIALOG_BOOT=$(whiptail --title "Set partition size of /boot" \
+        --inputbox "Write size of /boot [>30 Mb] :" ${R} ${C} "30" \
+        3>&1 1>&2 2>&3)
+
+    if [ $? = 0 ] ; then
+        # echo "Size of /boot partition : ${DIALOG_BOOT} Mb"
+		export BOOTFS=${DIALOG_BOOT}
+    else
+        error "Operation Canceled"
+    fi
+
     # Set ip address
     read -r -p " ${QST} Write ip address you want to use [192.168.1.1] : " IP_ADDR
 }
 
-ZEROWRT_TYPE () {
-    ${SLP}
-    PS3=" ${QST} Select ZEROWRT type : "
-    opts1=("tiny" "gimmick")
-        select opt in "${opts1[@]}"
-        do
-            case $opt in
-                "tiny")
-                    export Ztype="tiny"
-                    export DIR_PACKAGES="tiny/packages.txt"
-                    export DIR_DISABLED="tiny/disabled.txt"
-                    export DIR_TYPE="tiny/"
-                    break
-                    ;;
-                "gimmick")
-                    export Ztype="gimmick"
-                    export DIR_PACKAGES="gimmick/packages.txt"
-                    export DIR_DISABLED="gimmick/disabled.txt"
-                    export DIR_TYPE="gimmick/"
-                    break
-                    ;;
-                *)
-                    ${ECMD} "invalid option $REPLY"
-                    ;;
-            esac
-        done
+OPENWRT_ROOTFS () {
+	DIALOG_ROOT=$(whiptail --title "Set partition size of /root" \
+        --inputbox "Write size of /root [>300 Mb] :" ${R} ${C} "300" \
+        3>&1 1>&2 2>&3)
+
+    if [ $? = 0 ] ; then
+		export ROOTFS=${DIALOG_ROOT}
+    else
+        error "Operation Canceled"
+    fi
 }
+
+OPENWRT_IPADDR () {
+	DIALOG_IPADDR=$(whiptail --title "Set default ip address" \
+        --inputbox "Write ip address openwrt :" ${R} ${C} "192.168.1.1" \
+        3>&1 1>&2 2>&3)
+
+    if [ $? = 0 ] ; then
+		export IP_ADDR=${DIALOG_IPADDR}
+    else
+        error "Operation Canceled"
+    fi
+}
+
+# ZEROWRT_TYPE () {
+#     ${SLP}
+#     PS3=" ${QST} Select ZEROWRT type : "
+#     opts1=("tiny" "gimmick")
+#         select opt in "${opts1[@]}"
+#         do
+#             case $opt in
+#                 "tiny")
+#                     export Ztype="tiny"
+#                     export DIR_PACKAGES="tiny/packages.txt"
+#                     export DIR_DISABLED="tiny/disabled.txt"
+#                     export DIR_TYPE="tiny/"
+#                     break
+#                     ;;
+#                 "gimmick")
+#                     export Ztype="gimmick"
+#                     export DIR_PACKAGES="gimmick/packages.txt"
+#                     export DIR_DISABLED="gimmick/disabled.txt"
+#                     export DIR_TYPE="gimmick/"
+#                     break
+#                     ;;
+#                 *)
+#                     ${ECMD} "invalid option $REPLY"
+#                     ;;
+#             esac
+#         done
+# }
 
 # Preparation before cooking ZeroWrt
 OPENWRT_PREPARE () {
@@ -286,7 +303,11 @@ V2RAYA_PREPARE () {
             chmod +x ${DIR_V2RAYA}/bin/v2ray || error "Failed to chmod file:v2ray"
             chmod +x ${DIR_V2RAYA}/bin/v2ctl || error "Failed to chmod file:v2ctl"
         # Install geodata and set v2rayA
-            export V2RAYA_REPO=$(curl -sL https://github.com/v2rayA/v2rayA/releases/latest | grep 'v2raya_linux'| sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | grep ${SHORT_ARCH}_ | awk 'FNR <= 1')
+            export V2RAYA_REPO=$(curl -sL https://github.com/v2rayA/v2rayA/releases/latest \
+            | grep 'v2raya_linux' \
+            | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' \
+            | grep ${SHORT_ARCH}_ \
+            | awk 'FNR <= 1')
             export GEO_REPO="https://github.com/v2rayA/dist-v2ray-rules-dat/blob/master"
             export WDIR_V2RAYA="files/usr/bin/v2raya"
             wget -q -O ${WDIR_V2RAYA} ${V2RAYA_REPO} || error "Failed to download file:v2rayA"
@@ -338,11 +359,13 @@ OPENWRT_BUILD () {
 }
 
 main () {
-    clear ; OPENWRT_VERSION
-    clear ; OPENWRT_MODEL
-    clear ; OPENWRT_CUSTOM
-    clear ; ZEROWRT_TYPE
-    clear ; OPENWRT_PREPARE
+    OPENWRT_VERSION
+    OPENWRT_MODEL
+    OPENWRT_BOOTFS
+	OPENWRT_ROOTFS
+	OPENWRT_IPADDR
+    ZEROWRT_TYPE
+    OPENWRT_PREPARE
     # Print info version
         ${PRIN} " %b %s " "${INFO}" "Selected Version : ${OPENWRT_VERZION}"
         ${SLP}

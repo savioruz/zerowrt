@@ -41,11 +41,11 @@ OPENWRT_VERSION () {
         error "Operation Canceled"
     fi
 
-	if [[ "${DIALOG_VERSION}" == "19.*" ]] ; then
+	if [[ ${DIALOG_VERSION} = 19.* ]] ; then
 		export OPENWRT_RASPI="brcm2708"
-	elif [[ "${DIALOG_VERSION}" == "18.*" ]] ; then
+	elif [[ ${DIALOG_VERSION} = 18.* ]] ; then
 		export OPENWRT_RASPI="brcm2708"
-	elif [[ "${DIALOG_VERSION}" == "21.*" ]] ; then
+	elif [[ ${DIALOG_VERSION} = 21.* ]] ; then
 		export OPENWRT_RASPI="bcm27xx"
 	fi
 }
@@ -72,25 +72,25 @@ OPENWRT_MODEL () {
         error "Operation Canceled"
     fi
 
-    if [[ "${DIALOG_MODEL}" == "bcm2708" ]] ; then
+    if [[ ${DIALOG_MODEL} = bcm2708 ]] ; then
         export INFO_MODEL="rpi"
         export ARCH="arm_arm1176jzf-s_vfp"
         export AKA_ARCH="arm32-v6"
         export SHORT_ARCH="arm"
         export MODELL="${MODEL_1}"
-    elif [[ "${DIALOG_MODEL}" == "bcm2709" ]] ; then
+    elif [[ ${DIALOG_MODEL} = bcm2709 ]] ; then
 		export INFO_MODEL="rpi-2"
         export ARCH="arm_cortex-a7_neon-vfpv4"
         export AKA_ARCH="arm32-v7a"
         export SHORT_ARCH="arm"
         export MODELL="${MODEL_2}"
-	elif [[ "${DIALOG_MODEL}" == "bcm2710" ]] ; then
+	elif [[ ${DIALOG_MODEL} = bcm2710 ]] ; then
 		export INFO_MODEL="rpi-3"
 		export ARCH="aarch64_cortex-a53"
         export AKA_ARCH="arm64-v8a"
         export SHORT_ARCH="arm64"
         export MODELL="${MODEL_3}"
-	elif [[ "${DIALOG_MODEL}" == "bcm2711" ]] ; then
+	elif [[ ${DIALOG_MODEL} = bcm2711 ]] ; then
 		export INFO_MODEL="rpi-4"
 		export ARCH="aarch64_cortex-a72"
         export AKA_ARCH="arm64-v8a"
@@ -136,34 +136,6 @@ OPENWRT_IPADDR () {
     fi
 }
 
-# ZEROWRT_TYPE () {
-#     ${SLP}
-#     PS3=" ${QST} Select ZEROWRT type : "
-#     opts1=("tiny" "gimmick")
-#         select opt in "${opts1[@]}"
-#         do
-#             case $opt in
-#                 "tiny")
-#                     export Ztype="tiny"
-#                     export DIR_PACKAGES="tiny/packages.txt"
-#                     export DIR_DISABLED="tiny/disabled.txt"
-#                     export DIR_TYPE="tiny/"
-#                     break
-#                     ;;
-#                 "gimmick")
-#                     export Ztype="gimmick"
-#                     export DIR_PACKAGES="gimmick/packages.txt"
-#                     export DIR_DISABLED="gimmick/disabled.txt"
-#                     export DIR_TYPE="gimmick/"
-#                     break
-#                     ;;
-#                 *)
-#                     ${ECMD} "invalid option $REPLY"
-#                     ;;
-#             esac
-#         done
-# }
-
 # Preparation before cooking ZeroWrt
 OPENWRT_PREPARE () {
 export IMAGEBUILDER_DIR="openwrt-imagebuilder-${OPENWRT_VERZION}-${OPENWRT_RASPI}-${MODEL_ARCH}.Linux-x86_64"
@@ -187,6 +159,7 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${PRIN} " %b %s ... " "${INFO}" "Preparing requirements"
         #cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt !"
         #cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt !"
+        export DIR_TYPE="tiny/"
         export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))"
         export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
     ${SLP}
@@ -257,34 +230,6 @@ EOF
 	${PRIN} "%b\\n" "${TICK}"
 }
 
-LIBERNET_PREPARE () {
-        # Install libernet
-        ${PRIN} " %b %s ... \n" "${INFO}" "Installing libernet"
-        export LIBERNET_REPO="https://github.com/lutfailham96/libernet.git"
-        mkdir -p files/www/libernet || error "Failed to create libernet dir"
-        git clone -q ${LIBERNET_REPO} || error "Failed to clone repo:${LIBERNET_REPO}"
-        cp -arf libernet/web/* files/www/libernet || error "Failed to install libernet"
-        mkdir -p files/usr/bin
-            wget -q https://github.com/lutfailham96/libernet/raw/main/binaries.txt || error "Failed to download file:binaries.txt !"
-                while IFS= read -r line; do
-                    if ! which ${line} > /dev/null 2>&1 ; then
-                    bin="files/usr/bin/${line}"
-                    ${ECMD} "\e[0;34mInstalling\e[0m ${line} ..."
-                    wget -q -O "${bin}" "https://github.com/lutfailham96/libernet-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download binaries !"
-                    chmod +x "${bin}" || error "Failed to chmod !"
-                    fi
-                done < binaries.txt
-        # Install v2ray-core for libernet
-            mkdir -p packages
-            export V2RAY_REPO=$(curl -sL https://github.com/kuoruan/openwrt-v2ray/releases/latest | grep '/kuoruan/openwrt-v2ray/releases/download' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | grep 'v2ray-core_' | grep ${ARCH})
-            wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray.ipk !"
-            ${ECMD} "src v2ray-core file:packages" >> repositories.conf
-        ${PRIN} " %b %s " "${INFO}" "Install Libernet"
-        ${PRIN} "%b" "${DONE}"
-        ${SLP}
-        ${PRIN} " %b\\n" "${TICK}"
-}
-
 OPENCLASH_PREPARE () {
         # Install openclash
         ${PRIN} " %b %s ... " "${INFO}" "Installing OpenClash"
@@ -293,39 +238,6 @@ OPENCLASH_PREPARE () {
             ${ECMD} "src luci-app-openclash file:packages" >> repositories.conf
         ${SLP}
 	    ${PRIN} "%b\\n" "${TICK}"
-}
-
-V2RAYA_PREPARE () {
-        # Install v2ray
-        ${PRIN} " %b %s ... \n" "${INFO}" "Installing v2rayA"
-            export V2FLY_REPO=$(curl -sL https://github.com/v2fly/v2ray-core/releases/latest | grep 'v2ray-linux'| sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | grep ${AKA_ARCH} | grep -v '.dgst' | awk 'FNR <= 1')
-            export DIR_V2RAYA="files/etc/v2raya"
-            wget -q ${V2FLY_REPO} || error "Failed to download file:v2ray-linux from v2fly"
-            mkdir -p ${DIR_V2RAYA}/bin || error "Failed to create directoy:${DIR_V2RAYA}/bin"
-            unzip -d ${DIR_V2RAYA} v2ray-linux-${AKA_ARCH}.zip || error "Failed to decompressed file:v2ray.zip"
-            cp ${DIR_V2RAYA}/v2ray ${DIR_V2RAYA}/bin || error "Failed to install v2ray"
-            cp ${DIR_V2RAYA}/v2ctl ${DIR_V2RAYA}/bin || error "Failed to install v2ctl"
-            chmod +x ${DIR_V2RAYA}/bin/v2ray || error "Failed to chmod file:v2ray"
-            chmod +x ${DIR_V2RAYA}/bin/v2ctl || error "Failed to chmod file:v2ctl"
-        # Install geodata and set v2rayA
-            export V2RAYA_REPO=$(curl -sL https://github.com/v2rayA/v2rayA/releases/latest \
-            | grep 'v2raya_linux' \
-            | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' \
-            | grep ${SHORT_ARCH}_ \
-            | awk 'FNR <= 1')
-            export GEO_REPO="https://github.com/v2rayA/dist-v2ray-rules-dat/blob/master"
-            export WDIR_V2RAYA="files/usr/bin/v2raya"
-            wget -q -O ${WDIR_V2RAYA} ${V2RAYA_REPO} || error "Failed to download file:v2rayA"
-            chmod +x ${WDIR_V2RAYA} || error "Failed to chmod file:v2raya"
-            mkdir -p files/usr/share/v2ray || error "Failed to create dir:files/usr/share/v2ray"
-            for p in geoip.dat geosite.dat ; do
-                wget -q -O files/usr/share/v2ray/${p} ${GEO_REPO}/${p} || error "Failed to download file:geodata"
-            done
-            chmod +x files/etc/init.d/v2raya || error "Failed to chmod file:init v2raya"
-        ${PRIN} " %b %s " "${INFO}" "Install v2rayA"
-        ${PRIN} "%b" "${DONE}"
-        ${SLP}
-        ${PRIN} " %b\\n" "${TICK}"
 }
 
 ADDITIONAL_PREPARE () {
@@ -369,7 +281,6 @@ main () {
     OPENWRT_BOOTFS
 	OPENWRT_ROOTFS
 	OPENWRT_IPADDR
-    ZEROWRT_TYPE
     OPENWRT_PREPARE
     # Print info version
         ${PRIN} " %b %s " "${INFO}" "Selected Version : ${OPENWRT_VERZION}"
@@ -387,19 +298,9 @@ main () {
         ${PRIN} " %b %s " "${INFO}" "CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}"
         ${SLP}
         ${PRIN} "%b\\n" "${TICK}"
-    # Print info type zerowrt
-        ${PRIN} " %b %s " "${INFO}" "Selected Type : ${Ztype}"
-        ${SLP}
-        ${PRIN} "%b\\n" "${TICK}"
-    if [[ "${Ztype}" == "tiny" ]] ; then
-        OPENWRT_BUILD
-    elif [[ "${Ztype}" == "gimmick" ]] ; then
-        LIBERNET_PREPARE
-        OPENCLASH_PREPARE
-        V2RAYA_PREPARE
-        ADDITIONAL_PREPARE
-        OPENWRT_BUILD
-    fi
+    OPENCLASH_PREPARE
+    ADDITIONAL_PREPARE
+    OPENWRT_BUILD
 }
 
 main

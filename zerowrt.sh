@@ -309,6 +309,7 @@ luci-app-openvpn
 openssh-client
 openvpn-openssl
 openvpn-easy-rsa
+stunnel
 EOF
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
@@ -354,6 +355,7 @@ coreutils-timeout
 httping
 v2ray-core
 procps-ng-ps
+python3
 python3-pip
 openssh-client
 openssl-util

@@ -434,6 +434,15 @@ theme () {
         ${ECMD} "luci-theme-edge" >> packages.txt
 }
 
+userland () {
+    if [[ ${OPENWRT_VERZION} = 19.* && ${OPENWRT_VERZION} = 18.* ]] ; then
+		export USERLAND_REPO="https://github.com/jakues/libernet-proprietary/raw/main/${ARCH}/binaries/bcm27xx-userland.ipk"
+        ${ECMD} "\e[0;34mInstalling\e[0m bcm27xx-userland ..."
+        wget -q -P packages/ ${USERLAND_REPO} || error "Failed to download file:bcm27xx-userland.ipk"
+        ${ECMD} "src bcm27xx-userland file:packages" >> repositories.conf
+    fi
+}
+
 # Cook the image
 OPENWRT_BUILD () {
     # Build
@@ -486,6 +495,7 @@ main () {
         ${SLP}
         ${PRIN} "%b\\n" "${TICK}"
     OPENWRT_TUNNEL
+    userland
     OPENWRT_BUILD
 }
 

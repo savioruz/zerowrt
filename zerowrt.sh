@@ -189,9 +189,10 @@ export HOME_DIR="${ROOT_DIR}/root"
     # ${PRIN} " %b %s ... " "${INFO}" "Preparing requirements"
     #     #cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt !"
     #     #cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt !"
-         export DIR_TYPE="universal/"
+        export DIR_TYPE="universal/"
     #     export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))"
-         export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
+        cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt !"
+        export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
     # ${SLP}
 	# ${PRIN} "%b\\n" "${TICK}"
     # Prepare data

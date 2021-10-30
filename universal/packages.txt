@@ -56,3 +56,4 @@ whereis
 wget
 zoneinfo-simple
 zsh
+ 

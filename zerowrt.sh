@@ -305,6 +305,7 @@ EOF
 Openvpn () {
     ${PRIN} " %b %s ... " "${INFO}" "Installing Openvpn"
     cat >> packages.txt << EOF
+luci-app-openvpn
 openssh-client
 openvpn-openssl
 openvpn-easy-rsa

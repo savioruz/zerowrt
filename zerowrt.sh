@@ -69,7 +69,7 @@ OPENWRT_MODEL () {
     if [ $? = 0 ] ; then
         export MODEL_ARCH=${DIALOG_MODEL}
     else
-        error "Operation Canceled"
+        OPENWRT_VERSION
     fi
 
     if [[ ${DIALOG_MODEL} = bcm2708 ]] ; then
@@ -108,7 +108,7 @@ OPENWRT_BOOTFS () {
         # echo "Size of /boot partition : ${DIALOG_BOOT} Mb"
 		export BOOTFS=${DIALOG_BOOT}
     else
-        error "Operation Canceled"
+        OPENWRT_MODEL
     fi
 }
 
@@ -120,7 +120,7 @@ OPENWRT_ROOTFS () {
     if [ $? = 0 ] ; then
 		export ROOTFS=${DIALOG_ROOT}
     else
-        error "Operation Canceled"
+        OPENWRT_BOOTFS
     fi
 }
 
@@ -132,8 +132,37 @@ OPENWRT_IPADDR () {
     if [ $? = 0 ] ; then
 		export IP_ADDR=${DIALOG_IPADDR}
     else
-        error "Operation Canceled"
+        OPENWRT_ROOTFS
     fi
+}
+
+OPENWRT_TUNNEL () {
+    whiptail --title "Select tunnel package" \
+		--checklist --separate-output "Choose your package" ${R} ${C} 4 \
+		"Openclash" "${MODEL_1}" OFF \
+		"Openvpn" "${MODEL_2}"  OFF \
+		"Wireguard" "${MODEL_3}"  OFF \
+		"Xderm" "${MODEL_4}"  OFF \
+		2>tunnel.txt
+
+    while read dTunnel ; do
+        case "$dTunnel" in
+            Openclash)
+                Openclash
+            ;;
+            Openvpn)
+                Openvpn
+            ;;
+            Wireguard)
+                wireguard
+            ;;
+            Xderm)
+                Xderm
+            ;;
+            *)
+            ;;
+        esac
+    done < tunnel.txt
 }
 
 # Preparation before cooking ZeroWrt
@@ -159,15 +188,15 @@ export HOME_DIR="${ROOT_DIR}/root"
     # ${PRIN} " %b %s ... " "${INFO}" "Preparing requirements"
     #     #cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt !"
     #     #cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt !"
-    #     export DIR_TYPE="tiny/"
+         export DIR_TYPE="universal/"
     #     export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))"
-    #     export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
+         export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
     # ${SLP}
 	# ${PRIN} "%b\\n" "${TICK}"
     # Prepare data
     ${PRIN} " %b %s ... " "${INFO}" "Preparing data"
         mkdir -p ${ROOT_DIR} || error "Failed to create files/root directory !"
-        
+        mkdir -p files/usr/lib/lua/luci/controller files/usr/lib/lua/luci/view  || error "Failed to create directory !"
         cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || error "Failed to copy data !"
         chmod +x ${ROOT_DIR}/usr/bin/neofetch || error "Failed to chmod:neofetch"
         chmod +x ${ROOT_DIR}/etc/zshinit || error "Failed to chmod:zshinit"
@@ -227,11 +256,27 @@ reload_service() {
 }
 EOF
     chmod +x files/etc/init.d/mikhmon || error "Failed to chmod file:mikhmon.init"
+    cat > files/usr/lib/lua/luci/controller/mikhmon.lua << EOF
+module("luci.controller.mikhmon", package.seeall)
+function index()
+entry({"admin", "services", "mikhmon"}, template("mikhmon"), _("Mikhmon"), 2).leaf=true
+end
+EOF
+        cat > files/usr/lib/lua/luci/view/mikhmon.htm << EOF
+<%+header%>
+<div class="cbi-map">
+<iframe id="mikhmon" style="width: 100%; min-height: 800px; border: none; border-radius: 2px;"></iframe>
+</div>
+<script type="text/javascript">
+document.getElementById("mikhmon").src = "http://" + window.location.hostname + ":4433";
+</script>
+<%+footer%>
+EOF
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
 }
 
-OPENCLASH_PREPARE () {
+Openclash () {
         # Install openclash
         ${PRIN} " %b %s ... " "${INFO}" "Installing OpenClash"
             export OC_REPO=$(curl -sL https://github.com/vernesong/OpenClash/releases \
@@ -240,30 +285,55 @@ OPENCLASH_PREPARE () {
             | awk 'FNR <= 1')
             wget -q -P packages/ ${OC_REPO} || error "Failed to download file:luci-app-openclash.ipk !"
             ${ECMD} "src luci-app-openclash file:packages" >> repositories.conf
-            ${ECMD} "coreutils \
-            coreutils-nohup \
-            iptables-mod-tproxy \
-            iptables-mod-extra \
-            libcap \
-            libcap-bin \
-            ruby \
-            ruby-yaml \
-            ip6tables-mod-nat" >> packages.txt
+            cat >> packages.txt << EOF
+coreutils
+coreutils-nohup
+iptables-mod-tproxy
+iptables-mod-extra
+libcap
+libcap-bin
+ruby
+ruby-yaml
+ip6tables-mod-nat
+EOF
         ${SLP}
 	    ${PRIN} "%b\\n" "${TICK}"
 }
 
-XDERM_PREPARE () {
+Openvpn () {
+    ${PRIN} " %b %s ... " "${INFO}" "Installing Openvpn"
+    cat >> packages.txt << EOF
+openssh-client
+openvpn-openssl
+openvpn-easy-rsa
+EOF
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+}
+
+Wireguard () {
+    ${PRIN} " %b %s ... " "${INFO}" "Installing Openvpn"
+    cat >> packages.txt << EOF
+kmod-wireguard
+luci-app-wireguard
+luci-proto-wireguard
+wireguard-tools
+EOF
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+}
+
+Xderm () {
     # Install xderm binaries
     ${PRIN} " %b %s ... \n" "${INFO}" "Installing xderm binaries"
         export XDERM_BIN="https://github.com/jakues/libernet-proprietary/raw/main/xderm.txt"
         mkdir -p files/usr/bin
         wget -q XDERM_BIN || error "Failed to download file:binaries.txt !"
-            while IFS= read -r line; do
+            while IFS= read -r line ; do
                     if ! which ${line} > /dev/null 2>&1 ; then
                     bin="files/usr/bin/${line}"
                     ${ECMD} "\e[0;34mInstalling\e[0m ${line} ..."
-                    wget -q -O "${bin}" "https://github.com/jakues/libernet-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download binaries !"
+                    wget -q -O "${bin}" "https://github.com/jakues/libernet-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download xderm binaries !"
                     chmod +x "${bin}" || error "Failed to chmod !"
                     fi
             done < xderm.txt
@@ -274,31 +344,89 @@ XDERM_PREPARE () {
         | grep 'v2ray-core_' | grep ${ARCH})
         wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray-core.ipk !"
         ${ECMD} "src v2ray-core file:packages" >> repositories.conf
-        ${ECMD} "badvpn-tun2socks \
-        coreutils-base64 \
-        coreutils-timeout \
-        httping \
-        v2ray-core \
-        procps-ng-ps \
-        python3-pip \
-        openssh-client \
-        openssl-util \
-        php7 \
-        php7-cgi \
-        php7-mod-session \
-        https-dns-proxy" >> packages.txt
+        cat >> packages.txt << EOF
+badvpn-tun2socks
+coreutils-base64
+coreutils-timeout
+httping
+v2ray-core
+procps-ng-ps
+python3-pip
+openssh-client
+openssl-util
+php7
+php7-cgi
+php7-mod-session
+https-dns-proxy
+EOF
     ${PRIN} " %b %s " "${INFO}" "xderm binaries"
+    ${PRIN} "%b" "${DONE}"
+    ${SLP}
+    ${PRIN} " %b\\n" "${TICK}"
+    # Install xderm web
+    ${PRIN} " %b %s ... \n" "${INFO}" "Installing xderm webpage"
+        export XDERM_REPO="https://github.com/jakues/xderm-mini_GUI/raw/main"
+        mkdir -p files/www/xderm files/www/xderm/js files/www/xderm/img files/www/xderm/log
+        cat >> xderm << EOF
+index.php
+index.html
+xderm-mini
+login.php
+header.php
+config.txt
+xdrtheme-blue-agus
+EOF
+            while IFS= read -r line ; do
+                    if ! which ${line} > /dev/null 2>&1 ; then
+                    dest="files/www/xderm/${line}"
+                    wget -q -O "${dest}" "${XDERM_REPO}/${line}" || error "Failed to download xderm binaries !"
+                    fi
+            done < xderm
+        cat >> xderm-img << EOF
+image.png
+fav.ico
+ico.png
+background.jpg
+EOF
+            while IFS= read -r line ; do
+                    if ! which ${line} > /dev/null 2>&1 ; then
+                    dest="files/www/xderm/img/${line}"
+                    wget -q -O "${dest}" "${XDERM_REPO}/${line}" || error "Failed to download xderm binaries !"
+                    fi
+            done < xderm-img
+        wget -q -P files/www/xderm/js/ ${XDERM_REPO}/jquery-2.1.3.min.js || error "Failed to download xderm binaries !"
+        wget -q -P files/usr/bin/ ${XDERM_REPO}/adds/xdrauth || error "Failed to download xderm binaries !"
+        wget -q -P files/usr/bin/ ${XDERM_REPO}/adds/xdrtool || error "Failed to download xderm binaries !"
+        chmod +x files/usr/bin/xdrauth || error "Faild to change permission"
+        chmod +x files/usr/bin/xdrtool || error "Faild to change permission"
+        cat > files/usr/lib/lua/luci/controller/xderm.lua << EOF
+module("luci.controller.xderm", package.seeall)
+function index()
+entry({"admin", "services", "xderm"}, template("xderm"), _("Xderm"), 2).leaf=true
+end
+EOF
+        cat > files/usr/lib/lua/luci/view/xderm.htm << EOF
+<%+header%>
+<div class="cbi-map">
+<iframe id="xderm" style="width: 100%; min-height: 800px; border: none; border-radius: 2px;"></iframe>
+</div>
+<script type="text/javascript">
+document.getElementById("xderm").src = "http://" + window.location.hostname + "/xderm";
+</script>
+<%+footer%>
+EOF
+    ${PRIN} " %b %s " "${INFO}" "Install xderm"
     ${PRIN} "%b" "${DONE}"
     ${SLP}
     ${PRIN} " %b\\n" "${TICK}"
 }
 
-ADDITIONAL_PREPARE () {
+theme () {
         # Install luci theme edge
-            export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
-            wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
-            ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
-            ${ECMD} "luci-theme-edge" >> packages.txt
+        export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
+        wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
+        ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
+        ${ECMD} "luci-theme-edge" >> packages.txt
 }
 
 # Cook the image
@@ -309,8 +437,8 @@ OPENWRT_BUILD () {
         make image PROFILE="${INFO_MODEL}" \
         FILES="$(pwd)/files/" \
         EXTRA_IMAGE_NAME="zerowrt-${Ztype}" \
-        PACKAGES="${ZEROWRT_PACKAGES}" \
-        DISABLED_SERVICES="${ZEROWRT_DISABLED}" || error "Failed to build image !"
+        PACKAGES="${ZEROWRT_PACKAGES}" || error "Failed to build image !"
+    #    DISABLED_SERVICES="${ZEROWRT_DISABLED}" || error "Failed to build image !"
     ${PRIN} " %b %s " "${INFO}" "Cleanup"
     # Back to first directory
     cd .. || error "Can't back to working directory !"
@@ -352,8 +480,7 @@ main () {
         ${PRIN} " %b %s " "${INFO}" "CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}"
         ${SLP}
         ${PRIN} "%b\\n" "${TICK}"
-    OPENCLASH_PREPARE
-    ADDITIONAL_PREPARE
+    OPENWRT_TUNNEL
     OPENWRT_BUILD
 }
 

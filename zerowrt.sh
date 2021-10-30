@@ -30,7 +30,7 @@ error() {
 OPENWRT_VERSION () {
     DIALOG_VERSION=$(whiptail --title "Openwrt Version" \
 		--radiolist "Choose your version" ${R} ${C} 3 \
-		"21.02.0" "Latest Stable Release" ON \
+		"21.02.1" "Latest Stable Release" ON \
 		"19.07.8" "Old Stable Release" OFF \
 		"18.06.9" "Old Stable Archive"  OFF \
     3>&1 1>&2 2>&3)
@@ -58,45 +58,46 @@ OPENWRT_MODEL () {
 	export MODEL_3="Pi 3 (64 bit) compatible on pi 2Brev2,3B,3B+,CM3"
 	export MODEL_4="Pi 4 (64 bit) compatible on pi 4B,CM4"
 
-    DIALOG_MODEL=$(whiptail --title "Raspberry Pi Model" \
+    whiptail --title "Raspberry Pi Model" \
 		--radiolist "Choose your raspi model" ${R} ${C} 4 \
-		"bcm2708" "${MODEL_1}" OFF \
+		"bcm2708" "${MODEL_1}" ON \
 		"bcm2709" "${MODEL_2}"  OFF \
 		"bcm2710" "${MODEL_3}"  OFF \
 		"bcm2711" "${MODEL_4}"  OFF \
-		3>&1 1>&2 2>&3)
+		2>model.txt
 
     if [ $? = 0 ] ; then
-        export MODEL_ARCH=${DIALOG_MODEL}
+        export MODEL_ARCH=$(cat model.txt)
     else
         OPENWRT_VERSION
     fi
 
-    if [[ ${DIALOG_MODEL} = bcm2708 ]] ; then
+    if [[ ${MODEL_ARCH} = bcm2708 ]] ; then
         export INFO_MODEL="rpi"
         export ARCH="arm_arm1176jzf-s_vfp"
         export AKA_ARCH="arm32-v6"
         export SHORT_ARCH="arm"
         export MODELL="${MODEL_1}"
-    elif [[ ${DIALOG_MODEL} = bcm2709 ]] ; then
+    elif [[ ${MODEL_ARCH} = bcm2709 ]] ; then
 		export INFO_MODEL="rpi-2"
         export ARCH="arm_cortex-a7_neon-vfpv4"
         export AKA_ARCH="arm32-v7a"
         export SHORT_ARCH="arm"
         export MODELL="${MODEL_2}"
-	elif [[ ${DIALOG_MODEL} = bcm2710 ]] ; then
+	elif [[ ${MODEL_ARCH} = bcm2710 ]] ; then
 		export INFO_MODEL="rpi-3"
 		export ARCH="aarch64_cortex-a53"
         export AKA_ARCH="arm64-v8a"
         export SHORT_ARCH="arm64"
         export MODELL="${MODEL_3}"
-	elif [[ ${DIALOG_MODEL} = bcm2711 ]] ; then
+	elif [[ ${MODEL_ARCH} = bcm2711 ]] ; then
 		export INFO_MODEL="rpi-4"
 		export ARCH="aarch64_cortex-a72"
         export AKA_ARCH="arm64-v8a"
         export SHORT_ARCH="arm"
         export MODELL="${MODEL_4}"
 	fi
+
 }
 
 OPENWRT_BOOTFS () {
@@ -139,10 +140,10 @@ OPENWRT_IPADDR () {
 OPENWRT_TUNNEL () {
     whiptail --title "Select tunnel package" \
 		--checklist --separate-output "Choose your package" ${R} ${C} 4 \
-		"Openclash" "${MODEL_1}" OFF \
-		"Openvpn" "${MODEL_2}"  OFF \
-		"Wireguard" "${MODEL_3}"  OFF \
-		"Xderm" "${MODEL_4}"  OFF \
+		"Openclash" "" OFF \
+		"Openvpn" ""  OFF \
+		"Wireguard" ""  OFF \
+		"Xderm" ""  OFF \
 		2>tunnel.txt
 
     while read dTunnel ; do
@@ -154,7 +155,7 @@ OPENWRT_TUNNEL () {
                 Openvpn
             ;;
             Wireguard)
-                wireguard
+                Wireguard
             ;;
             Xderm)
                 Xderm
@@ -328,7 +329,7 @@ Xderm () {
     ${PRIN} " %b %s ... \n" "${INFO}" "Installing xderm binaries"
         export XDERM_BIN="https://github.com/jakues/libernet-proprietary/raw/main/xderm.txt"
         mkdir -p files/usr/bin
-        wget -q XDERM_BIN || error "Failed to download file:binaries.txt !"
+        wget -q ${XDERM_BIN} || error "Failed to download file:binaries.txt !"
             while IFS= read -r line ; do
                     if ! which ${line} > /dev/null 2>&1 ; then
                     bin="files/usr/bin/${line}"
@@ -374,12 +375,12 @@ xderm-mini
 login.php
 header.php
 config.txt
-xdrtheme-blue-agus
 EOF
             while IFS= read -r line ; do
                     if ! which ${line} > /dev/null 2>&1 ; then
-                    dest="files/www/xderm/${line}"
-                    wget -q -O "${dest}" "${XDERM_REPO}/${line}" || error "Failed to download xderm binaries !"
+                    xderm_www="files/www/xderm/${line}"
+                    ${ECMD} "\e[0;34mDownloading\e[0m ${line} ..."
+                    wget -q -O ${xderm_www} ${XDERM_REPO}/${line} || error "Failed to download xderm binaries !"
                     fi
             done < xderm
         cat >> xderm-img << EOF
@@ -390,12 +391,14 @@ background.jpg
 EOF
             while IFS= read -r line ; do
                     if ! which ${line} > /dev/null 2>&1 ; then
-                    dest="files/www/xderm/img/${line}"
-                    wget -q -O "${dest}" "${XDERM_REPO}/${line}" || error "Failed to download xderm binaries !"
+                    xderm_img="files/www/xderm/img/${line}"
+                    ${ECMD} "\e[0;34mDownloading\e[0m ${line} ..."
+                    wget -q -O ${xderm_img} ${XDERM_REPO}/${line} || error "Failed to download xderm binaries !"
                     fi
             done < xderm-img
         wget -q -P files/www/xderm/js/ ${XDERM_REPO}/jquery-2.1.3.min.js || error "Failed to download xderm binaries !"
         wget -q -P files/usr/bin/ ${XDERM_REPO}/adds/xdrauth || error "Failed to download xderm binaries !"
+        wget -q -P files/www/xderm/ ${XDERM_REPO}/adds/xdrtheme-blue-agus || error "Failed to download xderm binaries !"
         wget -q -P files/usr/bin/ ${XDERM_REPO}/adds/xdrtool || error "Failed to download xderm binaries !"
         chmod +x files/usr/bin/xdrauth || error "Faild to change permission"
         chmod +x files/usr/bin/xdrtool || error "Faild to change permission"

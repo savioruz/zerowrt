@@ -19,7 +19,7 @@ export OPENWRT_ORIGINAL_URL="https://downloads.openwrt.org/releases"
 # export OPENWRT_RASPI="bcm27xx"
 # export OPENWRT_RASPI_OLD="brcm2708"
 # V2ray Version
-export V2RAY_VERSION="4.41.1-1"
+# export V2RAY_VERSION="4.41.1-1"
 
 error() {
     ${PRIN} "$1 ! ${CROSS}"
@@ -156,17 +156,18 @@ export HOME_DIR="${ROOT_DIR}/root"
         rm ${IMAGEBUILDER_FILE} || error "Failed to remove file !"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
-    ${PRIN} " %b %s ... " "${INFO}" "Preparing requirements"
-        #cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt !"
-        #cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt !"
-        export DIR_TYPE="tiny/"
-        export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))"
-        export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
-    ${SLP}
-	${PRIN} "%b\\n" "${TICK}"
+    # ${PRIN} " %b %s ... " "${INFO}" "Preparing requirements"
+    #     #cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt !"
+    #     #cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt !"
+    #     export DIR_TYPE="tiny/"
+    #     export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))"
+    #     export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
+    # ${SLP}
+	# ${PRIN} "%b\\n" "${TICK}"
     # Prepare data
     ${PRIN} " %b %s ... " "${INFO}" "Preparing data"
         mkdir -p ${ROOT_DIR} || error "Failed to create files/root directory !"
+        
         cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || error "Failed to copy data !"
         chmod +x ${ROOT_DIR}/usr/bin/neofetch || error "Failed to chmod:neofetch"
         chmod +x ${ROOT_DIR}/etc/zshinit || error "Failed to chmod:zshinit"
@@ -233,11 +234,63 @@ EOF
 OPENCLASH_PREPARE () {
         # Install openclash
         ${PRIN} " %b %s ... " "${INFO}" "Installing OpenClash"
-            export OC_REPO=$(curl -sL https://github.com/vernesong/OpenClash/releases | grep 'luci-app-openclash_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
+            export OC_REPO=$(curl -sL https://github.com/vernesong/OpenClash/releases \
+            | grep 'luci-app-openclash_' \
+            | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' \
+            | awk 'FNR <= 1')
             wget -q -P packages/ ${OC_REPO} || error "Failed to download file:luci-app-openclash.ipk !"
             ${ECMD} "src luci-app-openclash file:packages" >> repositories.conf
+            ${ECMD} "coreutils \
+            coreutils-nohup \
+            iptables-mod-tproxy \
+            iptables-mod-extra \
+            libcap \
+            libcap-bin \
+            ruby \
+            ruby-yaml \
+            ip6tables-mod-nat" >> packages.txt
         ${SLP}
 	    ${PRIN} "%b\\n" "${TICK}"
+}
+
+XDERM_PREPARE () {
+    # Install xderm binaries
+    ${PRIN} " %b %s ... \n" "${INFO}" "Installing xderm binaries"
+        export XDERM_BIN="https://github.com/jakues/libernet-proprietary/raw/main/xderm.txt"
+        mkdir -p files/usr/bin
+        wget -q XDERM_BIN || error "Failed to download file:binaries.txt !"
+            while IFS= read -r line; do
+                    if ! which ${line} > /dev/null 2>&1 ; then
+                    bin="files/usr/bin/${line}"
+                    ${ECMD} "\e[0;34mInstalling\e[0m ${line} ..."
+                    wget -q -O "${bin}" "https://github.com/jakues/libernet-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download binaries !"
+                    chmod +x "${bin}" || error "Failed to chmod !"
+                    fi
+            done < xderm.txt
+        mkdir -p packages
+        export V2RAY_REPO=$(curl -sL https://github.com/kuoruan/openwrt-v2ray/releases/latest \
+        | grep '/kuoruan/openwrt-v2ray/releases/download' \
+        | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' \
+        | grep 'v2ray-core_' | grep ${ARCH})
+        wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray-core.ipk !"
+        ${ECMD} "src v2ray-core file:packages" >> repositories.conf
+        ${ECMD} "badvpn-tun2socks \
+        coreutils-base64 \
+        coreutils-timeout \
+        httping \
+        v2ray-core \
+        procps-ng-ps \
+        python3-pip \
+        openssh-client \
+        openssl-util \
+        php7 \
+        php7-cgi \
+        php7-mod-session \
+        https-dns-proxy" >> packages.txt
+    ${PRIN} " %b %s " "${INFO}" "xderm binaries"
+    ${PRIN} "%b" "${DONE}"
+    ${SLP}
+    ${PRIN} " %b\\n" "${TICK}"
 }
 
 ADDITIONAL_PREPARE () {
@@ -245,6 +298,7 @@ ADDITIONAL_PREPARE () {
             export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
             wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
             ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
+            ${ECMD} "luci-theme-edge" >> packages.txt
 }
 
 # Cook the image

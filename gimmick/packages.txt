@@ -5,14 +5,15 @@ chat
 comgt
 comgt-ncm
 curl
-coreutils
-coreutils-nohup
-coreutils-stdbuf
+#coreutils
+#coreutils-base64
+#coreutils-timeout
 -dnsmasq
 dnsmasq-full
 git
 git-http
-httping
+#httping
+#https-dns-proxy
 htop
 iptables
 iptables-mod-tproxy
@@ -60,7 +61,6 @@ luci-app-watchcat
 luci-app-wireguard
 luci-theme-bootstrap
 luci-theme-material
-luci-theme-edge
 luci-proto-wireguard
 nano
 openssh-client
@@ -71,7 +71,9 @@ php7-cli
 php7-cgi
 php7-mod-json
 php7-mod-session
+procps-ng-ps
 python3
+python3-pip
 ruby
 ruby-yaml
 screen

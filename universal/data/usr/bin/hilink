@@ -1,0 +1,37 @@
+#!/bin/sh
+
+IP='192.168.8.1'
+RESPONSE=`curl -s -X GET http://${IP}/api/webserver/SesTokInfo`
+COOKIE=`echo "$RESPONSE"| grep SessionID=| cut -b 10-147`
+TOKEN=`echo "$RESPONSE"| grep TokInfo| cut -b 10-41`
+
+info () {
+    curl -b $COOKIE -c $COOKIE -H "X-Requested-With: XMLHttpRequest" \
+    http://${IP}/api/device/information --header \
+    "__RequestVerificationToken: $TOKEN" --header "Content-Type:text/xml"
+}
+
+status () {
+    curl -b $COOKIE -c $COOKIE -H "X-Requested-With: XMLHttpRequest" \
+    http://${IP}/api/monitoring/status --header \
+    "__RequestVerificationToken: $TOKEN" --header "Content-Type:text/xml"
+}
+
+reboot () {
+    DATA="<request><Control>1</Control></request>"
+    curl -b $COOKIE -c $COOKIE -H "X-Requested-With: XMLHttpRequest" \
+    --data "$DATA" http://${IP}/api/device/control --header \
+    "__RequestVerificationToken: $TOKEN" --header "Content-Type:text/xml"
+}
+
+case "$1" in
+    -i|--i)
+    info
+    ;;
+    -s|--s)
+    status
+    ;;
+    -r|--r)
+    reboot
+    ;;
+esa

@@ -192,7 +192,6 @@ export HOME_DIR="${ROOT_DIR}/root"
         export DIR_TYPE="universal/"
     #     export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))"
         cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt !"
-        export ZEROWRT_PACKAGES="$(echo $(cat $(pwd)/${DIR_TYPE}/packages.txt))"
     # ${SLP}
 	# ${PRIN} "%b\\n" "${TICK}"
     # Prepare data
@@ -201,6 +200,7 @@ export HOME_DIR="${ROOT_DIR}/root"
         mkdir -p files/usr/lib/lua/luci/controller files/usr/lib/lua/luci/view  || error "Failed to create directory !"
         cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || error "Failed to copy data !"
         chmod +x ${ROOT_DIR}/usr/bin/neofetch || error "Failed to chmod:neofetch"
+        chmod +x ${ROOT_DIR}/usr/bin/hilink || error "Failed to chmod:hilink"
         chmod +x ${ROOT_DIR}/etc/zshinit || error "Failed to chmod:zshinit"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
@@ -297,6 +297,7 @@ libcap-bin
 ruby
 ruby-yaml
 ip6tables-mod-nat
+luci-app-openclash
 EOF
         ${SLP}
 	    ${PRIN} "%b\\n" "${TICK}"
@@ -449,6 +450,7 @@ userland () {
 OPENWRT_BUILD () {
     # Build
     ${PRIN} " %b %s ... \n" "${INFO}" "Ready to cook"
+        export ZEROWRT_PACKAGES="$(echo $(cat packages.txt))"
         sleep 2
         make image PROFILE="${INFO_MODEL}" \
         FILES="$(pwd)/files/" \

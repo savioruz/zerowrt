@@ -436,7 +436,7 @@ theme () {
         ${ECMD} "luci-theme-edge" >> packages.txt
 }
 
-userland () {
+old () {
     if [[ ${OPENWRT_VERZION} = 19.* || ${OPENWRT_VERZION} = 18.* ]] ; then
         ${PRIN} " %b %s " "${INFO}" "Detected old version openwrt"
             # Download bcm27xx-userland manual
@@ -447,6 +447,27 @@ userland () {
             export LIBCAP_REPO="https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/packages/libcap-bin.ipk"
             wget -q -P packages/ ${LIBCAP_REPO} || error "Failed to download file:libcap-bin.ipk"
             ${ECMD} "src libcap-bin file:packages" >> repositories.conf
+            # Configure network
+            export NETWORK_DIR="files/etc/uci-defaults/99_configure_network"
+            rm files/etc/config/network
+            cat << "EOF" > ${NETWORK_DIR}
+uci -q batch << EOI
+set network.lan=interface
+set network.lan.type='bridge'
+set network.lan.netmask='255.255.255.0'
+set network.lan.proto='static'
+set network.lan.ifname='eth0'
+set network.lan.ipaddr='4.3.2.1'
+set network.tun0=interface
+set network.tun0.proto='none'
+set network.tun0.ifname='tun0'
+set network.wan=interface
+set network.wan.proto='dhcp'
+set network.wan.ifname='eth1
+commit network
+EOI
+EOF
+        sed -i -e "s/4.3.2.1/${IP_ADDR}/" ${NETWORK_DIR} || error "Failed to change openwrt ip address" 
         ${SLP}
         ${PRIN} "%b\\n" "${TICK}"
     fi
@@ -506,7 +527,7 @@ main () {
         ${PRIN} "%b\\n" "${TICK}"
     OPENWRT_TUNNEL
     theme
-    userland
+    old
     OPENWRT_BUILD
 }
 

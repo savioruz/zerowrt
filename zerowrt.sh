@@ -350,7 +350,6 @@ Xderm () {
         wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray-core.ipk !"
         ${ECMD} "src v2ray-core file:packages" >> repositories.conf
         cat >> packages.txt << EOF
-badvpn-tun2socks
 coreutils-base64
 coreutils-timeout
 httping

@@ -438,11 +438,13 @@ theme () {
 }
 
 userland () {
-    if [[ ${OPENWRT_VERZION} = 19.* && ${OPENWRT_VERZION} = 18.* ]] ; then
-		export USERLAND_REPO="https://github.com/jakues/libernet-proprietary/raw/main/${ARCH}/binaries/bcm27xx-userland.ipk"
-        ${ECMD} "\e[0;34mInstalling\e[0m bcm27xx-userland ..."
-        wget -q -P packages/ ${USERLAND_REPO} || error "Failed to download file:bcm27xx-userland.ipk"
-        ${ECMD} "src bcm27xx-userland file:packages" >> repositories.conf
+    if [[ ${OPENWRT_VERZION} = 19.* || ${OPENWRT_VERZION} = 18.* ]] ; then
+        ${PRIN} " %b %s " "${INFO}" "Detected old version openwrt"
+            export USERLAND_REPO="https://github.com/jakues/libernet-proprietary/raw/main/${ARCH}/binaries/bcm27xx-userland.ipk"
+            wget -q -P packages/ ${USERLAND_REPO} || error "Failed to download file:bcm27xx-userland.ipk"
+            ${ECMD} "src bcm27xx-userland file:packages" >> repositories.conf
+        ${SLP}
+        ${PRIN} "%b\\n" "${TICK}"
     fi
 }
 
@@ -499,6 +501,7 @@ main () {
         ${SLP}
         ${PRIN} "%b\\n" "${TICK}"
     OPENWRT_TUNNEL
+    theme
     userland
     OPENWRT_BUILD
 }

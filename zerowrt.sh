@@ -444,7 +444,7 @@ userland () {
             wget -q -P packages/ ${USERLAND_REPO} || error "Failed to download file:bcm27xx-userland.ipk"
             ${ECMD} "src bcm27xx-userland file:packages" >> repositories.conf
             # Download libcap-bin
-            export LIBCAP_REPO="${OPENWRT_ORIGINAL_URL}/${OPENWRT_VERZION}/packages/${ARCH}/packages/libcap-bin_2.43-1_${ARCH}.ipk"
+            export LIBCAP_REPO="https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/packages/libcap-bin.ipk"
             wget -q -P packages/ ${LIBCAP_REPO} || error "Failed to download file:libcap-bin.ipk"
             ${ECMD} "src libcap-bin file:packages" >> repositories.conf
         ${SLP}

@@ -280,7 +280,7 @@ EOF
 
 Openclash () {
         # Install openclash
-        ${PRIN} " %b %s ... " "${INFO}" "Installing OpenClash"
+        ${PRIN} " %b %s ... " "${INFO}" "Preparing OpenClash"
             export OC_REPO=$(curl -sL https://github.com/vernesong/OpenClash/releases \
             | grep 'luci-app-openclash_' \
             | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' \
@@ -304,7 +304,7 @@ EOF
 }
 
 Openvpn () {
-    ${PRIN} " %b %s ... " "${INFO}" "Installing Openvpn"
+    ${PRIN} " %b %s ... " "${INFO}" "Preparing Openvpn"
     cat >> packages.txt << EOF
 luci-app-openvpn
 openssh-client
@@ -317,7 +317,7 @@ EOF
 }
 
 Wireguard () {
-    ${PRIN} " %b %s ... " "${INFO}" "Installing Openvpn"
+    ${PRIN} " %b %s ... " "${INFO}" "Preparing Openvpn"
     cat >> packages.txt << EOF
 kmod-wireguard
 luci-app-wireguard

@@ -331,14 +331,14 @@ EOF
 Xderm () {
     # Install xderm binaries
     ${PRIN} " %b %s ... \n" "${INFO}" "Installing xderm binaries"
-        export XDERM_BIN="https://github.com/jakues/libernet-proprietary/raw/main/xderm.txt"
+        export XDERM_BIN="https://github.com/jakues/openwrt-proprietary/raw/main/xderm.txt"
         mkdir -p files/usr/bin
         wget -q ${XDERM_BIN} || error "Failed to download file:binaries.txt !"
             while IFS= read -r line ; do
                     if ! which ${line} > /dev/null 2>&1 ; then
                     bin="files/usr/bin/${line}"
                     ${ECMD} "\e[0;34mInstalling\e[0m ${line} ..."
-                    wget -q -O "${bin}" "https://github.com/jakues/libernet-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download xderm binaries !"
+                    wget -q -O "${bin}" "https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download xderm binaries !"
                     chmod +x "${bin}" || error "Failed to chmod !"
                     fi
             done < xderm.txt
@@ -439,9 +439,14 @@ theme () {
 userland () {
     if [[ ${OPENWRT_VERZION} = 19.* || ${OPENWRT_VERZION} = 18.* ]] ; then
         ${PRIN} " %b %s " "${INFO}" "Detected old version openwrt"
-            export USERLAND_REPO="https://github.com/jakues/libernet-proprietary/raw/main/${ARCH}/binaries/bcm27xx-userland.ipk"
+            # Download bcm27xx-userland manual
+            export USERLAND_REPO="https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/packages/bcm27xx-userland.ipk"
             wget -q -P packages/ ${USERLAND_REPO} || error "Failed to download file:bcm27xx-userland.ipk"
             ${ECMD} "src bcm27xx-userland file:packages" >> repositories.conf
+            # Download libcap-bin
+            export LIBCAP_REPO="${OPENWRT_ORIGINAL_URL}/${OPENWRT_VERZION}/packages/${ARCH}/packages/libcap-bin_2.43-1_${ARCH}.ipk"
+            wget -q -P packages/ ${LIBCAP_REPO} || error "Failed to download file:libcap-bin.ipk"
+            ${ECMD} "src libcap-bin file:packages" >> repositories.conf
         ${SLP}
         ${PRIN} "%b\\n" "${TICK}"
     fi
@@ -455,7 +460,7 @@ OPENWRT_BUILD () {
         sleep 2
         make image PROFILE="${INFO_MODEL}" \
         FILES="$(pwd)/files/" \
-        EXTRA_IMAGE_NAME="zerowrt-${Ztype}" \
+        EXTRA_IMAGE_NAME="zerowrt" \
         PACKAGES="${ZEROWRT_PACKAGES}" || error "Failed to build image !"
     #    DISABLED_SERVICES="${ZEROWRT_DISABLED}" || error "Failed to build image !"
     ${PRIN} " %b %s " "${INFO}" "Cleanup"

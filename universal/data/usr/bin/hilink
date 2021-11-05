@@ -24,6 +24,13 @@ reboot () {
     "__RequestVerificationToken: $TOKEN" --header "Content-Type:text/xml"
 }
 
+null () {
+    echo "Usage : hilink [OPTION]"
+    echo " -i|--i   print modem info"
+    echo " -s|--s   print modem status"
+    echo " -r|--r   reboot modem"
+}
+
 case "$1" in
     -i|--i)
     info
@@ -34,4 +41,7 @@ case "$1" in
     -r|--r)
     reboot
     ;;
-esa
+    *)
+    null
+    ;;
+esac

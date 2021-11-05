@@ -20,9 +20,12 @@ kmod-tun
 kmod-udptunnel6
 kmod-udptunnel4
 kmod-usb-core
+kmod-usb-dwc2
 kmod-usb-ehci
+kmod-usb-gadget-eth
 kmod-usb-hid
 kmod-usb-net
+kmod-usb-net-asix-ax88179
 kmod-usb-net-cdc-ether
 kmod-usb-net-cdc-ncm
 kmod-usb-net-huawei-cdc-ncm
@@ -42,6 +45,7 @@ luci-app-ttyd
 luci-theme-bootstrap
 luci-theme-material
 nano
+php7
 php7-cli
 screen
 tar

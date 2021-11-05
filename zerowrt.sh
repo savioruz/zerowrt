@@ -359,7 +359,6 @@ python3
 python3-pip
 openssh-client
 openssl-util
-php7
 php7-cgi
 php7-mod-session
 https-dns-proxy
@@ -406,6 +405,7 @@ EOF
         wget -q -P files/usr/bin/ ${XDERM_REPO}/adds/xdrtool || error "Failed to download xderm binaries !"
         chmod +x files/usr/bin/xdrauth || error "Faild to change permission"
         chmod +x files/usr/bin/xdrtool || error "Faild to change permission"
+        rm files/www/xderm/login.php files/www/xderm/header.php || error "Failed to remove xderm:login webpage"
         cat > files/usr/lib/lua/luci/controller/xderm.lua << EOF
 module("luci.controller.xderm", package.seeall)
 function index()
@@ -450,7 +450,7 @@ old () {
             # Configure network
             export NETWORK_DIR="files/etc/uci-defaults/99_configure_network"
             rm files/etc/config/network
-            cat << "EOF" > ${NETWORK_DIR}
+            cat > ${NETWORK_DIR} << "EOF"
 uci -q batch << EOI
 set network.lan=interface
 set network.lan.type='bridge'
@@ -471,6 +471,17 @@ EOF
         ${SLP}
         ${PRIN} "%b\\n" "${TICK}"
     fi
+}
+
+other () {
+    export LAN_DIR="files/etc/uci-defaults/99_configure_lan"
+    cat > ${NETWORK_DIR} << "EOF"
+uci -q batch << EOI
+set network.lan.ifname="`uci get network.lan.ifname` usb0"
+commit network
+EOI
+echo "dtoverlay=dwc2" >> /boot/config.txt
+EOF
 }
 
 # Cook the image
@@ -528,6 +539,7 @@ main () {
     OPENWRT_TUNNEL
     theme
     old
+    other
     OPENWRT_BUILD
 }
 

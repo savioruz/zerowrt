@@ -563,7 +563,7 @@ main () {
         ${SLP}
         ${PRIN} "%b\\n" "${TICK}"
     OPENWRT_TUNNEL
-    theme
+    OPENWRT_ADDONS
     old
     other
     OPENWRT_BUILD

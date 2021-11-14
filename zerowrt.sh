@@ -166,6 +166,21 @@ OPENWRT_TUNNEL () {
     done < tunnel.txt
 }
 
+OPENWRT_ADDONS () {
+    whiptail --title "Select addons package" \
+		--checklist --separate-output "Choose your package" ${R} ${C} 1 \
+		"Mikhmon" "A web-app to manage mikrotik hostpot " OFF \
+		2>addons.txt
+
+    while read dAddons ; do
+        case "$dAddons" in
+            Mikhmon)
+                Mikhmon
+            ;;
+        esac
+    done < addons.txt
+}
+
 # Preparation before cooking ZeroWrt
 OPENWRT_PREPARE () {
 export IMAGEBUILDER_DIR="openwrt-imagebuilder-${OPENWRT_VERZION}-${OPENWRT_RASPI}-${MODEL_ARCH}.Linux-x86_64"
@@ -220,13 +235,22 @@ export HOME_DIR="${ROOT_DIR}/root"
         git clone -q ${OMZ_REPO} files/root/.oh-my-zsh || error "Failed to clone ${OMZ_REPO}"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
-    ${PRIN} " %b %s ... " "${INFO}" "Installing mikhmon"
+}
+
+Mikhmon () {
+        ${PRIN} " %b %s ... " "${INFO}" "Installing mikhmon"
         export MIKHMON_REPO="https://github.com/laksa19/mikhmonv3.git"
         mkdir -p files/etc/init.d || error "Failed to create dir:init.d"
         git clone -q ${MIKHMON_REPO} files/www/mikhmon || error "Failed to clone ${MIKHMON_REPO}"
         #sed -i 's/str_replace(" ","_",date("Y-m-d H:i:s"))/str_replace(date)/g' files/www/mikhmon/index.php || error "Failed to mod:mikhmon/index.php"
         #sed -i 's/strtolower(date("M"))/strtolower(date)/g' files/www/mikhmon/include/menu.php || error "Failed to mod:mikhmon/menu.php"
         #sed -i 's/strtolowerdate("Y"))/strtolower(date)/g' files/www/mikhmon/include/menu.php || error "Failed to mod:mikhmon/menu.php"
+        cat >> packages.txt << EOF
+php7
+php7-cli
+php7-mod-session
+zoneinfo-asia
+EOF
         cat > files/etc/init.d/mikhmon << EOF
 #!/bin/sh /etc/rc.common
 # Mikhmon init script beta (C) 2021 ZeroWRT
@@ -333,6 +357,7 @@ Xderm () {
     ${PRIN} " %b %s ... \n" "${INFO}" "Installing xderm binaries"
         export XDERM_BIN="https://github.com/jakues/openwrt-proprietary/raw/main/xderm.txt"
         mkdir -p files/usr/bin
+        mkdir -p files/bin
         wget -q ${XDERM_BIN} || error "Failed to download file:binaries.txt !"
             while IFS= read -r line ; do
                     if ! which ${line} > /dev/null 2>&1 ; then
@@ -359,6 +384,7 @@ python3
 python3-pip
 openssh-client
 openssl-util
+php7
 php7-cgi
 php7-mod-session
 https-dns-proxy
@@ -402,7 +428,7 @@ EOF
         wget -q -P files/www/xderm/js/ ${XDERM_REPO}/jquery-2.1.3.min.js || error "Failed to download xderm binaries !"
         wget -q -P files/usr/bin/ ${XDERM_REPO}/adds/xdrauth || error "Failed to download xderm binaries !"
         wget -q -P files/www/xderm/ ${XDERM_REPO}/adds/xdrtheme-blue-agus || error "Failed to download xderm binaries !"
-        wget -q -P files/usr/bin/ ${XDERM_REPO}/adds/xdrtool || error "Failed to download xderm binaries !"
+        wget -q -P files/bin/ ${XDERM_REPO}/adds/xdrtool || error "Failed to download xderm binaries !"
         chmod +x files/usr/bin/xdrauth || error "Faild to change permission"
         chmod +x files/usr/bin/xdrtool || error "Faild to change permission"
         rm files/www/xderm/login.php files/www/xderm/header.php || error "Failed to remove xderm:login webpage"

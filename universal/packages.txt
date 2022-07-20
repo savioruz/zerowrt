@@ -45,8 +45,6 @@ luci-app-ttyd
 luci-theme-bootstrap
 luci-theme-material
 nano
-php7
-php7-cli
 screen
 tar
 unzip
@@ -54,6 +52,5 @@ usb-modeswitch
 usbutils
 whereis
 wget
-zoneinfo-asia
 zsh
  

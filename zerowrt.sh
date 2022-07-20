@@ -16,13 +16,9 @@ export SLP="sleep 0.69s"
 export R=20
 export C=70
 export OPENWRT_ORIGINAL_URL="https://downloads.openwrt.org/releases"
-# export OPENWRT_RASPI="bcm27xx"
-# export OPENWRT_RASPI_OLD="brcm2708"
-# V2ray Version
-# export V2RAY_VERSION="4.41.1-1"
 
 error() {
-    ${PRIN} "$1 ! ${CROSS}"
+    ${PRIN} "$1 ! ${CROSS}\n"
     exit
 }
 

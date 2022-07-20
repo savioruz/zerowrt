@@ -13,6 +13,6 @@ Debian / Ubuntu
 
 # [ Build ]
 
-    ```git clone https://github.com/jakues/zerowrt.git
+    git clone https://github.com/jakues/zerowrt.git
     cd zerowrt
-    ./zerowrt.sh```
+    ./zerowrt.sh

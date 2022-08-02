@@ -162,20 +162,20 @@ OPENWRT_TUNNEL () {
     done < tunnel.txt
 }
 
-OPENWRT_ADDONS () {
-    whiptail --title "Select addons package" \
-		--checklist --separate-output "Choose your package" ${R} ${C} 1 \
-		"Mikhmon" "A web-app to manage mikrotik hostpot " OFF \
-		2>addons.txt
+# OPENWRT_ADDONS () {
+#     whiptail --title "Select addons package" \
+# 		--checklist --separate-output "Choose your package" ${R} ${C} 1 \
+# 		"Mikhmon" "A web-app to manage mikrotik hostpot " OFF \
+# 		2>addons.txt
 
-    while read dAddons ; do
-        case "$dAddons" in
-            Mikhmon)
-                Mikhmon
-            ;;
-        esac
-    done < addons.txt
-}
+#     while read dAddons ; do
+#         case "$dAddons" in
+#             Mikhmon)
+#                 Mikhmon
+#             ;;
+#         esac
+#     done < addons.txt
+# }
 
 # Preparation before cooking ZeroWrt
 OPENWRT_PREPARE () {
@@ -229,71 +229,6 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${PRIN} " %b %s ... " "${INFO}" "Installing ohmyzsh"
         export OMZ_REPO="https://github.com/ohmyzsh/ohmyzsh.git"
         git clone -q ${OMZ_REPO} files/root/.oh-my-zsh || error "Failed to clone ${OMZ_REPO}"
-    ${SLP}
-	${PRIN} "%b\\n" "${TICK}"
-}
-
-Mikhmon () {
-        ${PRIN} " %b %s ... " "${INFO}" "Installing mikhmon"
-        export MIKHMON_REPO="https://github.com/laksa19/mikhmonv3.git"
-        mkdir -p files/etc/init.d || error "Failed to create dir:init.d"
-        git clone -q ${MIKHMON_REPO} files/www/mikhmon || error "Failed to clone ${MIKHMON_REPO}"
-        #sed -i 's/str_replace(" ","_",date("Y-m-d H:i:s"))/str_replace(date)/g' files/www/mikhmon/index.php || error "Failed to mod:mikhmon/index.php"
-        #sed -i 's/strtolower(date("M"))/strtolower(date)/g' files/www/mikhmon/include/menu.php || error "Failed to mod:mikhmon/menu.php"
-        #sed -i 's/strtolowerdate("Y"))/strtolower(date)/g' files/www/mikhmon/include/menu.php || error "Failed to mod:mikhmon/menu.php"
-        cat >> packages.txt << EOF
-php7
-php7-cli
-php7-mod-session
-zoneinfo-asia
-EOF
-        cat > files/etc/init.d/mikhmon << EOF
-#!/bin/sh /etc/rc.common
-# Mikhmon init script beta (C) 2021 ZeroWRT
-# Copyright (C) 2007 OpenWrt.org
-
-START=69
-STOP=01
-USE_PROCD=1
-
-start_service() {
-    procd_open_instance
-    procd_set_param command php-cli -S 0.0.0.0:4433 -t /www/mikhmon
-	echo "Mikhmon Started"
-    procd_close_instance
-}
-
-stop_service() {
-	kill $(ps | grep 'php-cli -S 0.0.0.0:4433 -t /www/mikhmon' | awk '{print $1}' | awk 'FNR <= 1')
-	echo "Mikhmon Stopped"
-}
-
-reload_service() {
-	if pgrep "php-cli" ; then
-	 stop
-	 start
-	else
-	 start	
-	fi
-}
-EOF
-    chmod +x files/etc/init.d/mikhmon || error "Failed to chmod file:mikhmon.init"
-    cat > files/usr/lib/lua/luci/controller/mikhmon.lua << EOF
-module("luci.controller.mikhmon", package.seeall)
-function index()
-entry({"admin", "services", "mikhmon"}, template("mikhmon"), _("Mikhmon"), 2).leaf=true
-end
-EOF
-        cat > files/usr/lib/lua/luci/view/mikhmon.htm << EOF
-<%+header%>
-<div class="cbi-map">
-<iframe id="mikhmon" style="width: 100%; min-height: 800px; border: none; border-radius: 2px;"></iframe>
-</div>
-<script type="text/javascript">
-document.getElementById("mikhmon").src = "http://" + window.location.hostname + ":4433";
-</script>
-<%+footer%>
-EOF
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
 }
@@ -559,7 +494,7 @@ main () {
         ${SLP}
         ${PRIN} "%b\\n" "${TICK}"
     OPENWRT_TUNNEL
-    OPENWRT_ADDONS
+    # OPENWRT_ADDONS
     old
     other
     OPENWRT_BUILD

@@ -432,7 +432,7 @@ EOF
 
 other () {
     export LAN_DIR="files/etc/uci-defaults/99_configure_lan"
-    cat > ${NETWORK_DIR} << "EOF"
+    cat > ${LAN_DIR} << "EOF"
 uci -q batch << EOI
 set network.lan.ifname="`uci get network.lan.ifname` usb0"
 commit network

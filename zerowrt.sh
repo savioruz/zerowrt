@@ -265,7 +265,7 @@ EOF
             rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
             # Core Premium
             wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/premium/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz || error "Failed to download OpenClash Core"
-            tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz || error "Failed to install OpenClash Core"
+            tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz -C ${OC_Core_Dir} || error "Failed to install OpenClash Core"
             rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz
         ${SLP}
 	    ${PRIN} "%b\\n" "${TICK}"

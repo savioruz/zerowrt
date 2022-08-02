@@ -162,20 +162,20 @@ OPENWRT_TUNNEL () {
     done < tunnel.txt
 }
 
-# OPENWRT_ADDONS () {
-#     whiptail --title "Select addons package" \
-# 		--checklist --separate-output "Choose your package" ${R} ${C} 1 \
-# 		"Mikhmon" "A web-app to manage mikrotik hostpot " OFF \
-# 		2>addons.txt
+OPENWRT_ADDONS () {
+    whiptail --title "Select addons package" \
+		--checklist --separate-output "Choose your package" ${R} ${C} 1 \
+		"Luci Theme Edge" "Aesthetic Theme xD" ON \
+		2>addons.txt
 
-#     while read dAddons ; do
-#         case "$dAddons" in
-#             Mikhmon)
-#                 Mikhmon
-#             ;;
-#         esac
-#     done < addons.txt
-# }
+    while read dAddons ; do
+        case "$dAddons" in
+            Theme)
+                Theme
+            ;;
+        esac
+    done < addons.txt
+}
 
 # Preparation before cooking ZeroWrt
 OPENWRT_PREPARE () {
@@ -204,7 +204,7 @@ export HOME_DIR="${ROOT_DIR}/root"
     # Prepare data
     ${PRIN} " %b %s ... " "${INFO}" "Preparing data"
         mkdir -p ${ROOT_DIR} || error "Failed to create files/root directory !"
-        mkdir -p files/usr/lib/lua/luci/controller files/usr/lib/lua/luci/view  || error "Failed to create directory !"
+        # mkdir -p files/usr/lib/lua/luci/controller files/usr/lib/lua/luci/view  || error "Failed to create directory !"
         cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || error "Failed to copy data !"
         chmod +x ${ROOT_DIR}/usr/bin/neofetch || error "Failed to chmod:neofetch"
         chmod +x ${ROOT_DIR}/usr/bin/hilink || error "Failed to chmod:hilink"
@@ -252,7 +252,7 @@ ip6tables-mod-nat
 luci-app-openclash
 EOF
             # Install Core Clash
-            export OC_Core_Dir="${ROOT_DIR}/etc/openclash/core"
+            export OC_Core_Dir="files/etc/openclash/core"
             export OC_Core_Repo="https://raw.githubusercontent.com/vernesong/OpenClash/master/core-lateset"
             export OC_Premium_Version=$(echo $(curl -sL https://github.com/vernesong/OpenClash/raw/master/core_version | awk '{print $1}' ) | awk '{print $2}')
             mkdir -p ${OC_Core_Dir}
@@ -509,7 +509,7 @@ main () {
         ${SLP}
         ${PRIN} "%b\\n" "${TICK}"
     OPENWRT_TUNNEL
-    # OPENWRT_ADDONS
+    OPENWRT_ADDONS
     old
     other
     OPENWRT_BUILD

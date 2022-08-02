@@ -256,18 +256,20 @@ EOF
             export OC_Core_Repo="https://raw.githubusercontent.com/vernesong/OpenClash/master/core-lateset"
             export OC_Premium_Version=$(echo $(curl -sL https://github.com/vernesong/OpenClash/raw/master/core_version | awk '{print $1}' ) | awk '{print $2}')
             mkdir -p ${OC_Core_Dir}
+            # Core Meta
+            wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/meta/clash-linux-${SHORT_ARCH}.tar.gz || error "Failed to download OpenClash Core"
+            tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz -C ${OC_Core_Dir} || error "Failed to install OpenClash Core"
+            mv files/etc/openclash/core/clash files/etc/openclash/core/clash_meta || error "Failed to rename clash_meta"
+            rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
+            # Core Premium
+            wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/premium/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz || error "Failed to download OpenClash Core"
+            gzip -dk ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz || error "Failed to install OpenClash Core"
+            mv ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version} files/etc/openclash/core/clash_tun || error "Failed to rename clash_tun"
+            rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz
             # Core Dev
             wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/dev/clash-linux-${SHORT_ARCH}.tar.gz || error "Failed to download OpenClash Core"
             tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz -C ${OC_Core_Dir} || error "Failed to install OpenClash Core"
             rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
-            # Core Meta
-            wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/meta/clash-linux-${SHORT_ARCH}.tar.gz || error "Failed to download OpenClash Core"
-            tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz -C ${OC_Core_Dir} || error "Failed to install OpenClash Core"
-            rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
-            # Core Premium
-            wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/premium/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz || error "Failed to download OpenClash Core"
-            tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz -C ${OC_Core_Dir} || error "Failed to install OpenClash Core"
-            rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz
         ${SLP}
 	    ${PRIN} "%b\\n" "${TICK}"
 }

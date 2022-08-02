@@ -50,9 +50,9 @@ OPENWRT_VERSION () {
 # Select Raspberry Pi Model
 OPENWRT_MODEL () {
 	export MODEL_1="Pi 1 (32 bit) compatible on pi 0,0w,1B,1B+"
-	export MODEL_2="Pi 2 (32 bit) compatible on pi 2B,2B+,3B,3B+,CM3"
-	export MODEL_3="Pi 3 (64 bit) compatible on pi 2Brev2,3B,3B+,CM3"
-	export MODEL_4="Pi 4 (64 bit) compatible on pi 4B,CM4"
+	export MODEL_2="Pi 2 (32 bit) compatible on pi 2B,2B+,3B,3B+,CM3,zero2,4B,400,cm4"
+	export MODEL_3="Pi 3 (64 bit) compatible on pi 2Brev2,3B,3B+,CM3,zero2"
+	export MODEL_4="Pi 4 (64 bit) compatible on pi 4B,400,CM4"
 
     whiptail --title "Raspberry Pi Model" \
 		--radiolist "Choose your raspi model" ${R} ${C} 4 \
@@ -72,25 +72,25 @@ OPENWRT_MODEL () {
         export INFO_MODEL="rpi"
         export ARCH="arm_arm1176jzf-s_vfp"
         export AKA_ARCH="arm32-v6"
-        export SHORT_ARCH="arm"
+        export SHORT_ARCH="armv6"
         export MODELL="${MODEL_1}"
     elif [[ ${MODEL_ARCH} = bcm2709 ]] ; then
 		export INFO_MODEL="rpi-2"
         export ARCH="arm_cortex-a7_neon-vfpv4"
         export AKA_ARCH="arm32-v7a"
-        export SHORT_ARCH="arm"
+        export SHORT_ARCH="armv7"
         export MODELL="${MODEL_2}"
 	elif [[ ${MODEL_ARCH} = bcm2710 ]] ; then
 		export INFO_MODEL="rpi-3"
 		export ARCH="aarch64_cortex-a53"
         export AKA_ARCH="arm64-v8a"
-        export SHORT_ARCH="arm64"
+        export SHORT_ARCH="armv8"
         export MODELL="${MODEL_3}"
 	elif [[ ${MODEL_ARCH} = bcm2711 ]] ; then
 		export INFO_MODEL="rpi-4"
 		export ARCH="aarch64_cortex-a72"
         export AKA_ARCH="arm64-v8a"
-        export SHORT_ARCH="arm"
+        export SHORT_ARCH="armv8"
         export MODELL="${MODEL_4}"
 	fi
 
@@ -232,11 +232,12 @@ export HOME_DIR="${ROOT_DIR}/root"
 Openclash () {
         # Install openclash
         ${PRIN} " %b %s ... " "${INFO}" "Preparing OpenClash"
-            export OC_REPO=$(curl -sL https://github.com/vernesong/OpenClash/releases \
+            # Install luci-app-openclash
+            export OC_Luci=$(curl -sL https://github.com/vernesong/OpenClash/releases \
             | grep 'luci-app-openclash_' \
             | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' \
             | awk 'FNR <= 1')
-            wget -q -P packages/ ${OC_REPO} || error "Failed to download file:luci-app-openclash.ipk !"
+            wget -q -P packages/ ${OC_Luci} || error "Failed to download file:luci-app-openclash.ipk !"
             ${ECMD} "src luci-app-openclash file:packages" >> repositories.conf
             cat >> packages.txt << EOF
 coreutils
@@ -250,6 +251,22 @@ ruby-yaml
 ip6tables-mod-nat
 luci-app-openclash
 EOF
+            # Install Core Clash
+            export OC_Core_Dir="data/etc/openclash/core"
+            export OC_Core_Repo="https://raw.githubusercontent.com/vernesong/OpenClash/master/core-lateset"
+            export OC_Premium_Version=$(echo $(curl -sL https://github.com/vernesong/OpenClash/raw/master/core_version | awk '{print $1}' ) | awk '{print $2}')
+            # Core Dev
+            wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/dev/clash-linux-${SHORT_ARCH}.tar.gz || error "Failed to download OpenClash Core"
+            tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz -C ${OC_Core_Dir} || error "Failed to install OpenClash Core"
+            rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
+            # Core Meta
+            wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/meta/clash-linux-${SHORT_ARCH}.tar.gz || error "Failed to download OpenClash Core"
+            tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz -C ${OC_Core_Dir} || error "Failed to install OpenClash Core"
+            rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
+            # Core Premium
+            wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/premium/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz || error "Failed to download OpenClash Core"
+            tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz || error "Failed to install OpenClash Core"
+            rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz
         ${SLP}
 	    ${PRIN} "%b\\n" "${TICK}"
 }

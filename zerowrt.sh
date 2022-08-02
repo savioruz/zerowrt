@@ -252,9 +252,10 @@ ip6tables-mod-nat
 luci-app-openclash
 EOF
             # Install Core Clash
-            export OC_Core_Dir="data/etc/openclash/core"
+            export OC_Core_Dir="${ROOT_DIR}/etc/openclash/core"
             export OC_Core_Repo="https://raw.githubusercontent.com/vernesong/OpenClash/master/core-lateset"
             export OC_Premium_Version=$(echo $(curl -sL https://github.com/vernesong/OpenClash/raw/master/core_version | awk '{print $1}' ) | awk '{print $2}')
+            mkdir -p ${OC_Core_Dir}
             # Core Dev
             wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/dev/clash-linux-${SHORT_ARCH}.tar.gz || error "Failed to download OpenClash Core"
             tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz -C ${OC_Core_Dir} || error "Failed to install OpenClash Core"

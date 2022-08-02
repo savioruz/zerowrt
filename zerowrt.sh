@@ -55,7 +55,7 @@ OPENWRT_MODEL () {
 	export MODEL_4="Pi 4 (64 bit) compatible on pi 4B,400,CM4"
 
     whiptail --title "Raspberry Pi Model" \
-		--radiolist "Choose your raspi model" ${R} ${C} 4 \
+		--radiolist "Choose your raspi model" ${R} 90 4 \
 		"bcm2708" "${MODEL_1}" ON \
 		"bcm2709" "${MODEL_2}"  OFF \
 		"bcm2710" "${MODEL_3}"  OFF \

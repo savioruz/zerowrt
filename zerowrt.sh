@@ -164,9 +164,10 @@ OPENWRT_TUNNEL () {
 
 OPENWRT_ADDONS () {
     whiptail --title "Select addons package" \
-		--checklist --separate-output "Choose your package" ${R} 90 3 \
+		--checklist --separate-output "Choose your package" ${R} 90 4 \
 		"Luci Theme Edge" "Aesthetic Theme :>" ON \
-        "Modem Manager Utils" "Universal Driver For Modem Sierra EM7430, Fibocom L850, etc"
+        "Tiny File Manager" "File Manager on Luci" OFF \
+        "Modem Manager Utils" "Universal Driver For Modem Sierra EM7430, Fibocom L850, etc" OFF \
         "Fibocom" "Additional Fibocom Configuration" OFF \
 		2>addons.txt
 
@@ -174,6 +175,9 @@ OPENWRT_ADDONS () {
         case "$dAddons" in
             Theme)
                 Theme
+            ;;
+            TFM)
+                TFM
             ;;
             mUtils)
                 mUtils
@@ -425,8 +429,19 @@ Theme () {
     ${ECMD} "luci-theme-edge" >> packages.txt
 }
 
+TFM () {
+    # Install Tiny File Manager
+    ${PRIN} " %b %s ... " "${INFO}" "Preparing Tiny File Manager"
+        cat >> packages.txt << EOL
+luci-app-tinyfm
+EOL
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+}
+
 mUtils () {
     # Install Universal Package for Modem Manager
+    ${PRIN} " %b %s ... " "${INFO}" "Preparing Packages for Modem Utilty"
     cat >> packages.txt << EOF
 atinout
 kmod-mii
@@ -447,6 +462,8 @@ minicom
 picocom
 xmm-modem
 EOF
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
 }
 
 Fibocom () {

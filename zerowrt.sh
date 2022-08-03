@@ -241,6 +241,8 @@ export HOME_DIR="${ROOT_DIR}/root"
 	${PRIN} "%b\\n" "${TICK}"
     # Add https://github.com/lrdrdn/my-opkg-repo
     ${PRIN} " %b %s ... " "${INFO}" "Add Additional Repository"
+        # Disable Signature Verification
+        sed -i 's/option check_signature/# option check_signature/g' repositories.conf
         # Generic
         ${ECMD} "src/gz custom_generic https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/generic" >> repositories.conf
         # Architecture

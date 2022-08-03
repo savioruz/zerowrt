@@ -164,14 +164,22 @@ OPENWRT_TUNNEL () {
 
 OPENWRT_ADDONS () {
     whiptail --title "Select addons package" \
-		--checklist --separate-output "Choose your package" ${R} ${C} 1 \
-		"Luci Theme Edge" "Aesthetic Theme xD" ON \
+		--checklist --separate-output "Choose your package" ${R} 90 3 \
+		"Luci Theme Edge" "Aesthetic Theme :>" ON \
+        "Modem Manager Utils" "Universal Driver For Modem Sierra EM7430, Fibocom L850, etc"
+        "Fibocom" "Additional Fibocom Configuration" OFF \
 		2>addons.txt
 
     while read dAddons ; do
         case "$dAddons" in
             Theme)
                 Theme
+            ;;
+            mUtils)
+                mUtils
+            ;;
+            Fibocom)
+                Fibocom
             ;;
         esac
     done < addons.txt
@@ -225,6 +233,14 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${PRIN} " %b %s ... " "${INFO}" "Installing ohmyzsh"
         export OMZ_REPO="https://github.com/ohmyzsh/ohmyzsh.git"
         git clone -q ${OMZ_REPO} files/root/.oh-my-zsh || error "Failed to clone ${OMZ_REPO}"
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+    # Add https://github.com/lrdrdn/my-opkg-repo
+    ${PRIN} " %b %s ... " "${INFO}" "Add Additional Repository"
+        # Generic
+        ${ECMD} "src/gz custom_generic https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/generic" >> repositories.conf
+        # Architecture
+        ${ECMD} "src/gz custom_arch https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/${ARCH}" >> repositories.conf
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
 }
@@ -288,7 +304,7 @@ EOF
 }
 
 Wireguard () {
-    ${PRIN} " %b %s ... " "${INFO}" "Preparing Openvpn"
+    ${PRIN} " %b %s ... " "${INFO}" "Preparing Wireguard"
     cat >> packages.txt << EOF
 kmod-wireguard
 luci-app-wireguard
@@ -401,12 +417,49 @@ EOF
     ${PRIN} " %b\\n" "${TICK}"
 }
 
-theme () {
-        # Install luci theme edge
-        export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
-        wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
-        ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
-        ${ECMD} "luci-theme-edge" >> packages.txt
+Theme () {
+    # Install luci theme edge
+    export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
+    wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
+    ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
+    ${ECMD} "luci-theme-edge" >> packages.txt
+}
+
+mUtils () {
+    # Install Universal Package for Modem Manager
+    cat >> packages.txt << EOF
+atinout
+kmod-mii
+kmod-usb-acm
+kmod-usb-net-qmi-wwan
+kmod-usb-serial-qualcomm
+kmod-usb-net-cdc-mbim
+luci-app-atinout-mod
+luci-app-sms-tools
+luci-proto-modemmanager
+luci-proto-ncm
+luci-proto-qmi
+qmi-utils
+umbim
+uqmi
+modemmanager
+minicom
+picocom
+xmm-modem
+EOF
+}
+
+Fibocom () {
+    # Install Package for Modem Fibocom L850 GL & L860 GL
+    ${PRIN} " %b %s ... " "${INFO}" "Preparing Configuration for Fibocom Modem"
+    cat > files/etc/config/xmm-modem << EOI
+config xmm-modem
+    option device '/dev/ttyACM0'
+    option apn 'internet'
+    option enable '1'
+EOI
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
 }
 
 old () {

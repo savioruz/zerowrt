@@ -93,7 +93,6 @@ OPENWRT_MODEL () {
         export SHORT_ARCH="armv8"
         export MODELL="${MODEL_4}"
 	fi
-
 }
 
 OPENWRT_BOOTFS () {

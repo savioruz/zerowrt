@@ -135,7 +135,7 @@ OPENWRT_IPADDR () {
 OPENWRT_TUNNEL () {
     whiptail --title "Select tunnel package" \
 		--checklist --separate-output "Choose your package" ${R} ${C} 4 \
-		"Openclash" "" OFF \
+		"Openclash" "" ON \
 		"Openvpn" ""  OFF \
 		"Wireguard" ""  OFF \
 		"Xderm" ""  OFF \
@@ -163,9 +163,8 @@ OPENWRT_TUNNEL () {
 
 OPENWRT_ADDONS () {
     whiptail --title "Select addons package" \
-		--checklist --separate-output "Choose your package" ${R} 90 4 \
+		--checklist --separate-output "Choose your package" ${R} 90 3 \
 		"Luci Theme Edge" "Aesthetic Theme :>" ON \
-        "Tiny File Manager" "File Manager on Luci" OFF \
         "Modem Manager Utils" "Universal Driver For Modem Sierra EM7430, Fibocom L850, etc" OFF \
         "Fibocom" "Additional Fibocom Configuration" OFF \
 		2>addons.txt
@@ -174,9 +173,6 @@ OPENWRT_ADDONS () {
         case "$dAddons" in
             Theme)
                 Theme
-            ;;
-            TFM)
-                TFM
             ;;
             mUtils)
                 mUtils
@@ -293,6 +289,43 @@ EOF
             rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
         ${SLP}
 	    ${PRIN} "%b\\n" "${TICK}"
+
+        # Install tiny file manager
+        ${PRIN} " %b %s ... " "${INFO}" "Preparing Tiny File Manager"
+            # Install requirements
+            cat >> packages.txt << EOL
+php7
+php7-cgi
+php7-mod-session
+php7-mod-ctype
+php7-mod-fileinfo
+php7-mod-mbstring
+iconv
+EOL
+            # Kick off TFM
+            export TFM_Repo="https://github.com/noct99/blog.vpngame.com/raw/main/fileexplorer.zip"
+            export TFM_Dir="files/www"
+            wget -q -P ${TFM_Dir} ${TFM_Repo} || error "Cant download tiny file manager"
+            unzip ${TFM_Dir}/fileexplorer.zip -d ${TFM_Dir}
+            cat > files/usr/lib/lua/luci/controller/tinyfm.lua  << EOF
+module("luci.controller.tinyfm", package.seeall)
+function index()
+entry({"admin","system","tinyfm"}, template("tinyfm"), _("File Explorer"), 55).leaf=true
+end
+EOF
+            cat > files/usr/lib/lua/luci/view/tinyfm.htm  << EOL
+<%+header%>
+<div class="cbi-map">
+<br>
+<iframe id="tinyfm" style="width: 100%; min-height: 650px; border: none; border-radius: 2px;"></iframe>
+</div>
+<script type="text/javascript">
+document.getElementById("tinyfm").src = "http://" + window.location.hostname + "/tinyfm.php";
+</script>
+<%+footer%>
+EOL
+        ${SLP}
+        ${PRIN} "%b\\n" "${TICK}"
 }
 
 Openvpn () {
@@ -428,16 +461,6 @@ Theme () {
     wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
     ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
     ${ECMD} "luci-theme-edge" >> packages.txt
-}
-
-TFM () {
-    # Install Tiny File Manager
-    ${PRIN} " %b %s ... " "${INFO}" "Preparing Tiny File Manager"
-        cat >> packages.txt << EOL
-luci-app-tinyfm
-EOL
-    ${SLP}
-	${PRIN} "%b\\n" "${TICK}"
 }
 
 mUtils () {

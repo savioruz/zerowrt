@@ -307,13 +307,17 @@ EOL
             export TFM_Dir="files/www"
             wget -q -P ${TFM_Dir} ${TFM_Repo} || error "Cant download tiny file manager"
             unzip ${TFM_Dir}/fileexplorer.zip -d ${TFM_Dir}
-            cat > files/usr/lib/lua/luci/controller/tinyfm.lua  << EOF
+            export TFM_Lua_Dir="files/usr/lib/lua/luci/controller"
+            export TFM_Html_Dir="files/usr/lib/lua/luci/view"
+            mkdir -p ${TFM_Lua_Dir}
+            cat > ${TFM_Lua_Dir}/tinyfm.lua  << EOF
 module("luci.controller.tinyfm", package.seeall)
 function index()
 entry({"admin","system","tinyfm"}, template("tinyfm"), _("File Explorer"), 55).leaf=true
 end
 EOF
-            cat > files/usr/lib/lua/luci/view/tinyfm.htm  << EOL
+            mkdir -p ${TFM_Html_Dir}
+            cat > ${TFM_Html_Dir}/tinyfm.htm  << EOL
 <%+header%>
 <div class="cbi-map">
 <br>

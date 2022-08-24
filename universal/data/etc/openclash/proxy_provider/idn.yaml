@@ -1,16 +1,16 @@
 proxies:
-  - name: leo.zeropx.xyz_VLESS_WS
+  - name: insight.zeropx.xyz_VLESS_WS
     server: midtrans.com
     port: 443
     type: vless
-    uuid: f0a31b96-fe4e-ff7d-4db2-1955d567a045
+    uuid: eb804ed9-d3d8-467d-bea4-37bbb92aacd8
     cipher: auto
     tls: true
     skip-cert-verify: true
-    servername: leo.zeropx.xyz
+    servername: insight.zeropx.xyz
     network: ws
     ws-opts:
-      path: /kadalws
+      path: /
       headers:
-        Host: leo.zeropx.xyz
+        Host: insight.zeropx.xyz
     udp: true

@@ -250,10 +250,15 @@ Openclash () {
         # Install openclash
         ${PRIN} " %b %s ... " "${INFO}" "Preparing OpenClash"
             # Install luci-app-openclash
-            export OC_Luci=$(curl -sL https://github.com/vernesong/OpenClash/releases \
-            | grep 'luci-app-openclash_' \
-            | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' \
+            # export OC_Luci=$(curl -sL https://github.com/vernesong/OpenClash/releases \
+            # | grep 'luci-app-openclash_' \
+            # | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' \
+            # | awk 'FNR <= 1')
+            export OC_Version=$(curl -sL https://github.com/vernesong/OpenClash/tags \
+            | grep 'v0.45.' \
+            | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=##g' -e 's/>//g' -e 's#/vernesong/OpenClash/releases/tag/##g' \
             | awk 'FNR <= 1')
+            export OC_Luci="https://github.com/vernesong/OpenClash/releases/download/${OC_Version}/luci-app-openclash_${OC_Version}_all.ipk"
             wget -q -P packages/ ${OC_Luci} || error "Failed to download file:luci-app-openclash.ipk !"
             ${ECMD} "src luci-app-openclash file:packages" >> repositories.conf
             cat >> packages.txt << EOF

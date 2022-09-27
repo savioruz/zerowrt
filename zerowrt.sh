@@ -26,8 +26,8 @@ error() {
 OPENWRT_VERSION () {
     DIALOG_VERSION=$(whiptail --title "Openwrt Version" \
 		--radiolist "Choose your version" ${R} ${C} 3 \
-		"21.02.3" "Latest Stable Release" ON \
-		"19.07.9" "Old Stable Release" OFF \
+		"22.03.0" "Latest Stable Release" ON \
+		"21.02.3" "Old Stable Release" OFF \
 		"18.06.9" "Old Stable Archive"  OFF \
     3>&1 1>&2 2>&3)
 

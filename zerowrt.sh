@@ -298,13 +298,13 @@ EOF
         ${PRIN} " %b %s ... " "${INFO}" "Preparing Tiny File Manager"
             # Install requirements
             cat >> packages.txt << EOL
-php7
-php7-cgi
-php7-mod-session
-php7-mod-ctype
-php7-mod-fileinfo
-php7-mod-mbstring
-php7-mod-json
+php8
+php8-cgi
+php8-mod-session
+php8-mod-ctype
+php8-mod-fileinfo
+php8-mod-mbstring
+php8-mod-json
 iconv
 EOL
             # Kick off TFM
@@ -394,9 +394,9 @@ python3
 python3-pip
 openssh-client
 openssl-util
-php7
-php7-cgi
-php7-mod-session
+php8
+php8-cgi
+php8-mod-session
 https-dns-proxy
 EOF
     ${PRIN} " %b %s " "${INFO}" "xderm binaries"
@@ -515,6 +515,8 @@ EOI
 old () {
     if [[ ${OPENWRT_VERZION} = 18.* || ${OPENWRT_VERZION} = 19.* ]] ; then
         ${PRIN} " %b %s " "${INFO}" "Detected old version openwrt"
+            # Downgrae php version yo php7
+            sed -e 's/php8/php7/g' packages.txt
             # Download bcm27xx-userland manual
             export USERLAND_REPO="https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/packages/bcm27xx-userland.ipk"
             wget -q -P packages/ ${USERLAND_REPO} || error "Failed to download file:bcm27xx-userland.ipk"
@@ -605,8 +607,9 @@ EOL
 	fi
 
     # Add config for usb otg
-    export LAN_DIR="files/etc/uci-defaults/99_configure_lan"
+    export LAN_DIR="files/etc/uci-defaults/96_configure_lan"
     cat > ${LAN_DIR} << EOF
+#!/bin/sh
 uci -q batch << EOI
 set network.lan.ifname="`uci get network.lan.ifname` usb0"
 commit network
@@ -670,8 +673,8 @@ main () {
         ${PRIN} "%b\\n" "${TICK}"
     OPENWRT_TUNNEL
     OPENWRT_ADDONS
-    old
     other
+    old
     OPENWRT_BUILD
 }
 

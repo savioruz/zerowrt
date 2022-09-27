@@ -24,6 +24,7 @@ error () {
 
 errorClean () {
     ${PRIN} "$1 ! ${CROSS}\n"
+    cd ..
     rm -rf openwrt-imagebuilder*
     exit
 }
@@ -243,8 +244,10 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${PRIN} " %b %s ... " "${INFO}" "Add Additional Repository"
         # Disable Signature Verification
         sed -i 's/option check_signature/# option check_signature/g' repositories.conf
-        # Repo 21.02.3 for php7
-        ${ECMD} "src/gz old_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/packages/" >> repositories.conf
+        # Repo 21.02.3 packages
+        ${ECMD} "src/gz old_packages_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/packages/" >> repositories.conf
+        # Repo 21.02.3 base
+        ${ECMD} "src/gz old_packages_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/base/" >> repositories.conf
         # Generic
         ${ECMD} "src/gz custom_generic https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/generic" >> repositories.conf
         # Architecture

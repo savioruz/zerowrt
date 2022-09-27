@@ -1,0 +1,16 @@
+proxies:
+  - name: lamda.zeropx.xyz_VLESS_WS
+    server: midtrans.com
+    port: 443
+    type: vless
+    uuid: eb804ed9-d3d8-467d-bea4-37bbb92aacd
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: lamda.zeropx.xyz
+    network: ws
+    ws-opts:
+      path: /kadal
+      headers:
+        Host: lamda.zeropx.xyz
+    udp: true

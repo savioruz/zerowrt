@@ -50,12 +50,12 @@ OPENWRT_VERSION () {
 # Select Raspberry Pi Model
 OPENWRT_MODEL () {
 	export MODEL_1="Pi 1 (32 bit) compatible on pi 0,0w,1B,1B+"
-	export MODEL_2="Pi 2 (32 bit) compatible on pi 2B,2B+,3B,3B+,CM3"
-	export MODEL_3="Pi 3 (64 bit) compatible on pi 2Brev2,3B,3B+,CM3"
-	export MODEL_4="Pi 4 (64 bit) compatible on pi 4B,CM4"
+	export MODEL_2="Pi 2 (32 bit) compatible on pi 2B,2B+,3B,3B+,CM3,zero2,4B,400,cm4"
+	export MODEL_3="Pi 3 (64 bit) compatible on pi 2Brev2,3B,3B+,CM3,zero2"
+	export MODEL_4="Pi 4 (64 bit) compatible on pi 4B,400,CM4"
 
     whiptail --title "Raspberry Pi Model" \
-		--radiolist "Choose your raspi model" ${R} ${C} 4 \
+		--radiolist "Choose your raspi model" ${R} 90 4 \
 		"bcm2708" "${MODEL_1}" ON \
 		"bcm2709" "${MODEL_2}"  OFF \
 		"bcm2710" "${MODEL_3}"  OFF \
@@ -72,28 +72,27 @@ OPENWRT_MODEL () {
         export INFO_MODEL="rpi"
         export ARCH="arm_arm1176jzf-s_vfp"
         export AKA_ARCH="arm32-v6"
-        export SHORT_ARCH="arm"
+        export SHORT_ARCH="armv6"
         export MODELL="${MODEL_1}"
     elif [[ ${MODEL_ARCH} = bcm2709 ]] ; then
 		export INFO_MODEL="rpi-2"
         export ARCH="arm_cortex-a7_neon-vfpv4"
         export AKA_ARCH="arm32-v7a"
-        export SHORT_ARCH="arm"
+        export SHORT_ARCH="armv7"
         export MODELL="${MODEL_2}"
 	elif [[ ${MODEL_ARCH} = bcm2710 ]] ; then
 		export INFO_MODEL="rpi-3"
 		export ARCH="aarch64_cortex-a53"
         export AKA_ARCH="arm64-v8a"
-        export SHORT_ARCH="arm64"
+        export SHORT_ARCH="armv8"
         export MODELL="${MODEL_3}"
 	elif [[ ${MODEL_ARCH} = bcm2711 ]] ; then
 		export INFO_MODEL="rpi-4"
 		export ARCH="aarch64_cortex-a72"
         export AKA_ARCH="arm64-v8a"
-        export SHORT_ARCH="arm"
+        export SHORT_ARCH="armv8"
         export MODELL="${MODEL_4}"
 	fi
-
 }
 
 OPENWRT_BOOTFS () {
@@ -136,7 +135,7 @@ OPENWRT_IPADDR () {
 OPENWRT_TUNNEL () {
     whiptail --title "Select tunnel package" \
 		--checklist --separate-output "Choose your package" ${R} ${C} 4 \
-		"Openclash" "" OFF \
+		"Openclash" "" ON \
 		"Openvpn" ""  OFF \
 		"Wireguard" ""  OFF \
 		"Xderm" ""  OFF \
@@ -162,20 +161,28 @@ OPENWRT_TUNNEL () {
     done < tunnel.txt
 }
 
-# OPENWRT_ADDONS () {
-#     whiptail --title "Select addons package" \
-# 		--checklist --separate-output "Choose your package" ${R} ${C} 1 \
-# 		"Mikhmon" "A web-app to manage mikrotik hostpot " OFF \
-# 		2>addons.txt
+OPENWRT_ADDONS () {
+    whiptail --title "Select addons package" \
+		--checklist --separate-output "Choose your package" ${R} 90 3 \
+		"Luci Theme Edge" "Aesthetic Theme :>" ON \
+        "Modem Manager Utils" "Universal Driver For Modem Sierra EM7430, Fibocom L850, etc" OFF \
+        "Fibocom" "Additional Fibocom Configuration" OFF \
+		2>addons.txt
 
-#     while read dAddons ; do
-#         case "$dAddons" in
-#             Mikhmon)
-#                 Mikhmon
-#             ;;
-#         esac
-#     done < addons.txt
-# }
+    while read dAddons ; do
+        case "$dAddons" in
+            Theme)
+                Theme
+            ;;
+            mUtils)
+                mUtils
+            ;;
+            Fibocom)
+                Fibocom
+            ;;
+        esac
+    done < addons.txt
+}
 
 # Preparation before cooking ZeroWrt
 OPENWRT_PREPARE () {
@@ -204,7 +211,7 @@ export HOME_DIR="${ROOT_DIR}/root"
     # Prepare data
     ${PRIN} " %b %s ... " "${INFO}" "Preparing data"
         mkdir -p ${ROOT_DIR} || error "Failed to create files/root directory !"
-        mkdir -p files/usr/lib/lua/luci/controller files/usr/lib/lua/luci/view  || error "Failed to create directory !"
+        # mkdir -p files/usr/lib/lua/luci/controller files/usr/lib/lua/luci/view  || error "Failed to create directory !"
         cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || error "Failed to copy data !"
         chmod +x ${ROOT_DIR}/usr/bin/neofetch || error "Failed to chmod:neofetch"
         chmod +x ${ROOT_DIR}/usr/bin/hilink || error "Failed to chmod:hilink"
@@ -227,16 +234,32 @@ export HOME_DIR="${ROOT_DIR}/root"
         git clone -q ${OMZ_REPO} files/root/.oh-my-zsh || error "Failed to clone ${OMZ_REPO}"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
+    # Add https://github.com/lrdrdn/my-opkg-repo
+    ${PRIN} " %b %s ... " "${INFO}" "Add Additional Repository"
+        # Disable Signature Verification
+        sed -i 's/option check_signature/# option check_signature/g' repositories.conf
+        # Generic
+        ${ECMD} "src/gz custom_generic https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/generic" >> repositories.conf
+        # Architecture
+        ${ECMD} "src/gz custom_arch https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/${ARCH}" >> repositories.conf
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
 }
 
 Openclash () {
         # Install openclash
         ${PRIN} " %b %s ... " "${INFO}" "Preparing OpenClash"
-            export OC_REPO=$(curl -sL https://github.com/vernesong/OpenClash/releases \
-            | grep 'luci-app-openclash_' \
-            | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' \
+            # Install luci-app-openclash
+            # export OC_Luci=$(curl -sL https://github.com/vernesong/OpenClash/releases \
+            # | grep 'luci-app-openclash_' \
+            # | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' \
+            # | awk 'FNR <= 1')
+            export OC_Version=$(curl -sL https://github.com/vernesong/OpenClash/tags \
+            | grep 'v0.45.' \
+            | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=##g' -e 's/>//g' -e 's#/vernesong/OpenClash/releases/tag/##g' -e 's/v//g' \
             | awk 'FNR <= 1')
-            wget -q -P packages/ ${OC_REPO} || error "Failed to download file:luci-app-openclash.ipk !"
+            export OC_Luci="https://github.com/vernesong/OpenClash/releases/download/v${OC_Version}/luci-app-openclash_${OC_Version}_all.ipk"
+            wget -q -P packages/ ${OC_Luci} || error "Failed to download file:luci-app-openclash.ipk !"
             ${ECMD} "src luci-app-openclash file:packages" >> repositories.conf
             cat >> packages.txt << EOF
 coreutils
@@ -250,8 +273,69 @@ ruby-yaml
 ip6tables-mod-nat
 luci-app-openclash
 EOF
+            # Install Core Clash
+            export OC_Core_Dir="files/etc/openclash/core"
+            export OC_Core_Repo="https://raw.githubusercontent.com/vernesong/OpenClash/master/core-lateset"
+            export OC_Premium_Version=$(echo $(curl -sL https://github.com/vernesong/OpenClash/raw/master/core_version | awk '{print $1}' ) | awk '{print $2}')
+            mkdir -p ${OC_Core_Dir}
+            # Core Meta
+            wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/meta/clash-linux-${SHORT_ARCH}.tar.gz || error "Failed to download OpenClash Core"
+            tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz -C ${OC_Core_Dir} || error "Failed to install OpenClash Core"
+            mv files/etc/openclash/core/clash files/etc/openclash/core/clash_meta || error "Failed to rename clash_meta"
+            rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
+            # Core Premium
+            wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/premium/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz || error "Failed to download OpenClash Core"
+            gzip -dk ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz || error "Failed to install OpenClash Core"
+            mv ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version} files/etc/openclash/core/clash_tun || error "Failed to rename clash_tun"
+            rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz
+            # Core Dev
+            wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/dev/clash-linux-${SHORT_ARCH}.tar.gz || error "Failed to download OpenClash Core"
+            tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz -C ${OC_Core_Dir} || error "Failed to install OpenClash Core"
+            rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
         ${SLP}
 	    ${PRIN} "%b\\n" "${TICK}"
+
+        # Install tiny file manager
+        ${PRIN} " %b %s ... " "${INFO}" "Preparing Tiny File Manager"
+            # Install requirements
+            cat >> packages.txt << EOL
+php7
+php7-cgi
+php7-mod-session
+php7-mod-ctype
+php7-mod-fileinfo
+php7-mod-mbstring
+php7-mod-json
+iconv
+EOL
+            # Kick off TFM
+            export TFM_Repo="https://github.com/noct99/blog.vpngame.com/raw/main/fileexplorer.zip"
+            export TFM_Dir="files/www"
+            wget -q -P ${TFM_Dir} ${TFM_Repo} || error "Cant download tiny file manager"
+            unzip ${TFM_Dir}/fileexplorer.zip -d ${TFM_Dir}
+            export TFM_Lua_Dir="files/usr/lib/lua/luci/controller"
+            export TFM_Html_Dir="files/usr/lib/lua/luci/view"
+            mkdir -p ${TFM_Lua_Dir}
+            cat > ${TFM_Lua_Dir}/tinyfm.lua  << EOF
+module("luci.controller.tinyfm", package.seeall)
+function index()
+entry({"admin","system","tinyfm"}, template("tinyfm"), _("File Explorer"), 55).leaf=true
+end
+EOF
+            mkdir -p ${TFM_Html_Dir}
+            cat > ${TFM_Html_Dir}/tinyfm.htm  << EOL
+<%+header%>
+<div class="cbi-map">
+<br>
+<iframe id="tinyfm" style="width: 100%; min-height: 650px; border: none; border-radius: 2px;"></iframe>
+</div>
+<script type="text/javascript">
+document.getElementById("tinyfm").src = "http://" + window.location.hostname + "/tinyfm.php";
+</script>
+<%+footer%>
+EOL
+        ${SLP}
+        ${PRIN} "%b\\n" "${TICK}"
 }
 
 Openvpn () {
@@ -268,7 +352,7 @@ EOF
 }
 
 Wireguard () {
-    ${PRIN} " %b %s ... " "${INFO}" "Preparing Openvpn"
+    ${PRIN} " %b %s ... " "${INFO}" "Preparing Wireguard"
     cat >> packages.txt << EOF
 kmod-wireguard
 luci-app-wireguard
@@ -381,12 +465,52 @@ EOF
     ${PRIN} " %b\\n" "${TICK}"
 }
 
-theme () {
-        # Install luci theme edge
-        export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
-        wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
-        ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
-        ${ECMD} "luci-theme-edge" >> packages.txt
+Theme () {
+    # Install luci theme edge
+    export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
+    wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
+    ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
+    ${ECMD} "luci-theme-edge" >> packages.txt
+}
+
+mUtils () {
+    # Install Universal Package for Modem Manager
+    ${PRIN} " %b %s ... " "${INFO}" "Preparing Packages for Modem Utilty"
+    cat >> packages.txt << EOF
+atinout
+kmod-mii
+kmod-usb-acm
+kmod-usb-net-qmi-wwan
+kmod-usb-serial-qualcomm
+kmod-usb-net-cdc-mbim
+luci-app-atinout-mod
+luci-app-sms-tools
+luci-proto-modemmanager
+luci-proto-ncm
+luci-proto-qmi
+qmi-utils
+umbim
+uqmi
+modemmanager
+minicom
+picocom
+xmm-modem
+EOF
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
+}
+
+Fibocom () {
+    # Install Package for Modem Fibocom L850 GL & L860 GL
+    ${PRIN} " %b %s ... " "${INFO}" "Preparing Configuration for Fibocom Modem"
+    cat > files/etc/config/xmm-modem << EOI
+config xmm-modem
+    option device '/dev/ttyACM0'
+    option apn 'internet'
+    option enable '1'
+EOI
+    ${SLP}
+	${PRIN} "%b\\n" "${TICK}"
 }
 
 old () {
@@ -491,7 +615,7 @@ main () {
         ${SLP}
         ${PRIN} "%b\\n" "${TICK}"
     OPENWRT_TUNNEL
-    # OPENWRT_ADDONS
+    OPENWRT_ADDONS
     old
     other
     OPENWRT_BUILD

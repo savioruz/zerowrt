@@ -247,7 +247,7 @@ export HOME_DIR="${ROOT_DIR}/root"
         # Repo 21.02.3 packages
         ${ECMD} "src/gz old_packages_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/packages/" >> repositories.conf
         # Repo 21.02.3 base
-        ${ECMD} "src/gz old_packages_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/base/" >> repositories.conf
+        ${ECMD} "src/gz old_base_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/base/" >> repositories.conf
         # Generic
         ${ECMD} "src/gz custom_generic https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/generic" >> repositories.conf
         # Architecture
@@ -617,13 +617,13 @@ config internal 'diag'
 EOL
 	fi
 
-    # Add config for usb otg
-    cat > files/etc/uci-defaults/96_enable_otg << EOI
-#!/bin/sh
-uci set network.lan.ifname="`uci get network.lan.ifname` usb0"
-uci commit network
-echo "dtoverlay=dwc2" >> /boot/config.txt
-EOI
+#     # Add config for usb otg
+#     cat > files/etc/uci-defaults/96_enable_otg << EOI
+# #!/bin/sh
+# uci set network.lan.ifname="`uci get network.lan.ifname` usb0"
+# uci commit network
+# echo "dtoverlay=dwc2" >> /boot/config.txt
+# EOI
 }
 
 # Cook the image

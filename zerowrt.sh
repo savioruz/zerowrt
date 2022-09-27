@@ -243,6 +243,8 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${PRIN} " %b %s ... " "${INFO}" "Add Additional Repository"
         # Disable Signature Verification
         sed -i 's/option check_signature/# option check_signature/g' repositories.conf
+        # Repo 21.02.3 for php7
+        ${ECMD} "src/gz old_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/packages/" >> repositories.conf
         # Generic
         ${ECMD} "src/gz custom_generic https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/generic" >> repositories.conf
         # Architecture
@@ -304,13 +306,13 @@ EOF
         ${PRIN} " %b %s ... " "${INFO}" "Preparing Tiny File Manager"
             # Install requirements
             cat >> packages.txt << EOL
-php8
-php8-cgi
-php8-mod-session
-php8-mod-ctype
-php8-mod-fileinfo
-php8-mod-mbstring
-php8-mod-json
+php7
+php7-cgi
+php7-mod-session
+php7-mod-ctype
+php7-mod-fileinfo
+php7-mod-mbstring
+php7-mod-json
 iconv
 EOL
             # Kick off TFM
@@ -400,9 +402,9 @@ python3
 python3-pip
 openssh-client
 openssl-util
-php8
-php8-cgi
-php8-mod-session
+php7
+php7-cgi
+php7-mod-session
 https-dns-proxy
 EOF
     ${PRIN} " %b %s " "${INFO}" "xderm binaries"
@@ -521,8 +523,8 @@ EOI
 old () {
     if [[ ${OPENWRT_VERZION} = 18.* || ${OPENWRT_VERZION} = 19.* ]] ; then
         ${PRIN} " %b %s " "${INFO}" "Detected old version openwrt"
-            # Downgrae php version yo php7
-            sed -e 's/php8/php7/g' packages.txt
+            # # Downgrae php version yo php7
+            # sed -e 's/php7/php7/g' packages.txt
             # Download bcm27xx-userland manual
             export USERLAND_REPO="https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/packages/bcm27xx-userland.ipk"
             wget -q -P packages/ ${USERLAND_REPO} || error "Failed to download file:bcm27xx-userland.ipk"
@@ -613,15 +615,12 @@ EOL
 	fi
 
     # Add config for usb otg
-    export LAN_DIR="files/etc/uci-defaults/96_configure_lan"
-    cat > ${LAN_DIR} << EOF
+    cat > files/etc/uci-defaults/96_enable_otg << EOI
 #!/bin/sh
-uci -q batch << EOI
-set network.lan.ifname="`uci get network.lan.ifname` usb0"
-commit network
-EOI
+uci set network.lan.ifname="`uci get network.lan.ifname` usb0"
+uci commit network
 echo "dtoverlay=dwc2" >> /boot/config.txt
-EOF
+EOI
 }
 
 # Cook the image

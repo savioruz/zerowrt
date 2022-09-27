@@ -17,8 +17,14 @@ export R=20
 export C=70
 export OPENWRT_ORIGINAL_URL="https://downloads.openwrt.org/releases"
 
-error() {
+error () {
     ${PRIN} "$1 ! ${CROSS}\n"
+    exit
+}
+
+errorClean () {
+    ${PRIN} "$1 ! ${CROSS}\n"
+    rm -rf openwrt-imagebuilder*
     exit
 }
 
@@ -192,26 +198,26 @@ export ROOT_DIR="${IMAGEBUILDER_DIR}/files"
 export HOME_DIR="${ROOT_DIR}/root"
     # Prepare imagebuilder
     ${PRIN} " %b %s ... " "${INFO}" "Downloading Imagebuilder"
-    	wget -q ${IMAGEBUILDER_URL} || error "Failed to download imagebuilder !"
+    	wget -q ${IMAGEBUILDER_URL} || error "Failed to download imagebuilder"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
     ${PRIN} " %b %s ... " "${INFO}" "Extracting Imagebuilder"
-        tar xf ${IMAGEBUILDER_FILE} || error "Failed to extract file !"
+        tar xf ${IMAGEBUILDER_FILE} || error "Failed to extract file"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
     ${PRIN} " %b %s ... " "${INFO}" "Removing Imagebuilder"
-        rm ${IMAGEBUILDER_FILE} || error "Failed to remove file !"
+        rm ${IMAGEBUILDER_FILE} || error "Failed to remove file"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
         export DIR_TYPE="universal/"
-        cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt !"
-        cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt !"
+        cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt"
+        cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt"
         # export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))"
     # Prepare data
     ${PRIN} " %b %s ... " "${INFO}" "Preparing data"
-        mkdir -p ${ROOT_DIR} || error "Failed to create files/root directory !"
-        # mkdir -p files/usr/lib/lua/luci/controller files/usr/lib/lua/luci/view  || error "Failed to create directory !"
-        cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || error "Failed to copy data !"
+        mkdir -p ${ROOT_DIR} || error "Failed to create files/root directory"
+        # mkdir -p files/usr/lib/lua/luci/controller files/usr/lib/lua/luci/view  || error "Failed to create directory"
+        cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || error "Failed to copy data"
         chmod +x ${ROOT_DIR}/usr/bin/neofetch || error "Failed to chmod:neofetch"
         chmod +x ${ROOT_DIR}/usr/bin/hilink || error "Failed to chmod:hilink"
         chmod +x ${ROOT_DIR}/etc/zshinit || error "Failed to chmod:zshinit"
@@ -223,8 +229,8 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${SLP}
     ${PRIN} "%b\\n" "${TICK}"
     ${PRIN} " %b %s ... " "${INFO}" "Configure data"
-        sed -i -e "s/CONFIG_TARGET_KERNEL_PARTSIZE=.*/CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}/" .config || error "Failed to change bootfs size !"
-        sed -i -e "s/CONFIG_TARGET_ROOTFS_PARTSIZE=.*/CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}/" .config || error "Failed to change rootfs size !"
+        sed -i -e "s/CONFIG_TARGET_KERNEL_PARTSIZE=.*/CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}/" .config || error "Failed to change bootfs size"
+        sed -i -e "s/CONFIG_TARGET_ROOTFS_PARTSIZE=.*/CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}/" .config || error "Failed to change rootfs size"
         sed -i -e "s/4.3.2.1/${IP_ADDR}/" files/etc/config/network || error "Failed to change openwrt ip address"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
@@ -311,7 +317,7 @@ EOL
             export TFM_Repo="https://github.com/noct99/blog.vpngame.com/raw/main/fileexplorer.zip"
             export TFM_Dir="files/www"
             wget -q -P ${TFM_Dir} ${TFM_Repo} || error "Cant download tiny file manager"
-            unzip ${TFM_Dir}/fileexplorer.zip -d ${TFM_Dir}
+            unzip -q ${TFM_Dir}/fileexplorer.zip -d ${TFM_Dir}
             export TFM_Lua_Dir="files/usr/lib/lua/luci/controller"
             export TFM_Html_Dir="files/usr/lib/lua/luci/view"
             mkdir -p ${TFM_Lua_Dir}
@@ -368,13 +374,13 @@ Xderm () {
         export XDERM_BIN="https://github.com/jakues/openwrt-proprietary/raw/main/xderm.txt"
         mkdir -p files/usr/bin
         mkdir -p files/bin
-        wget -q ${XDERM_BIN} || error "Failed to download file:binaries.txt !"
+        wget -q ${XDERM_BIN} || error "Failed to download file:binaries.txt"
             while IFS= read -r line ; do
                     if ! which ${line} > /dev/null 2>&1 ; then
                     bin="files/usr/bin/${line}"
                     ${ECMD} "\e[0;34mInstalling\e[0m ${line} ..."
-                    wget -q -O "${bin}" "https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download xderm binaries !"
-                    chmod +x "${bin}" || error "Failed to chmod !"
+                    wget -q -O "${bin}" "https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download xderm binaries"
+                    chmod +x "${bin}" || error "Failed to chmod"
                     fi
             done < xderm.txt
         mkdir -p packages
@@ -382,7 +388,7 @@ Xderm () {
         | grep '/kuoruan/openwrt-v2ray/releases/download' \
         | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' \
         | grep 'v2ray-core_' | grep ${ARCH})
-        wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray-core.ipk !"
+        wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray-core.ipk"
         ${ECMD} "src v2ray-core file:packages" >> repositories.conf
         cat >> packages.txt << EOF
 coreutils-base64
@@ -419,7 +425,7 @@ EOF
                     if ! which ${line} > /dev/null 2>&1 ; then
                     xderm_www="files/www/xderm/${line}"
                     ${ECMD} "\e[0;34mDownloading\e[0m ${line} ..."
-                    wget -q -O ${xderm_www} ${XDERM_REPO}/${line} || error "Failed to download xderm binaries !"
+                    wget -q -O ${xderm_www} ${XDERM_REPO}/${line} || error "Failed to download xderm binaries"
                     fi
             done < xderm
         cat >> xderm-img << EOF
@@ -432,13 +438,13 @@ EOF
                     if ! which ${line} > /dev/null 2>&1 ; then
                     xderm_img="files/www/xderm/img/${line}"
                     ${ECMD} "\e[0;34mDownloading\e[0m ${line} ..."
-                    wget -q -O ${xderm_img} ${XDERM_REPO}/${line} || error "Failed to download xderm binaries !"
+                    wget -q -O ${xderm_img} ${XDERM_REPO}/${line} || error "Failed to download xderm binaries"
                     fi
             done < xderm-img
-        wget -q -P files/www/xderm/js/ ${XDERM_REPO}/jquery-2.1.3.min.js || error "Failed to download xderm binaries !"
+        wget -q -P files/www/xderm/js/ ${XDERM_REPO}/jquery-2.1.3.min.js || error "Failed to download xderm binaries"
         wget -q -P files/usr/bin/ ${XDERM_REPO}/adds/xdrauth || error "Failed to download xderm binaries !"
-        wget -q -P files/www/xderm/ ${XDERM_REPO}/adds/xdrtheme-blue-agus || error "Failed to download xderm binaries !"
-        wget -q -P files/bin/ ${XDERM_REPO}/adds/xdrtool || error "Failed to download xderm binaries !"
+        wget -q -P files/www/xderm/ ${XDERM_REPO}/adds/xdrtheme-blue-agus || error "Failed to download xderm binaries"
+        wget -q -P files/bin/ ${XDERM_REPO}/adds/xdrtool || error "Failed to download xderm binaries"
         chmod +x files/usr/bin/xdrauth || error "Faild to change permission"
         chmod +x files/usr/bin/xdrtool || error "Faild to change permission"
         rm files/www/xderm/login.php files/www/xderm/header.php || error "Failed to remove xderm:login webpage"
@@ -467,7 +473,7 @@ EOF
 Theme () {
     # Install luci theme edge
     export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
-    wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
+    wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk"
     ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
     ${ECMD} "luci-theme-edge" >> packages.txt
 }
@@ -629,15 +635,15 @@ OPENWRT_BUILD () {
         FILES="$(pwd)/files/" \
         EXTRA_IMAGE_NAME="zerowrt" \
         PACKAGES="${ZEROWRT_PACKAGES}" \
-        DISABLED_SERVICES="${ZEROWRT_DISABLED}" || error "Failed to build image !"
+        DISABLED_SERVICES="${ZEROWRT_DISABLED}" || errorClean "Failed to Build"
     ${PRIN} " %b %s " "${INFO}" "Cleanup"
     # Back to first directory
     cd .. || error "Can't back to working directory !"
     # Store the firmware to ez dir
     mkdir -p results || error "Failed to create directory"
-    cp -r ${IMAGEBUILDER_DIR}/bin/targets/${OPENWRT_RASPI}/${MODEL_ARCH} results || error "Failed to store firmware !"
+    cp -r ${IMAGEBUILDER_DIR}/bin/targets/${OPENWRT_RASPI}/${MODEL_ARCH} results || error "Failed to store firmware"
     # Clean up
-    rm -rf ${IMAGEBUILDER_DIR} || error "Failed to remove imagebuilder directory !"
+    rm -rf ${IMAGEBUILDER_DIR} || error "Failed to remove imagebuilder directory"
     ${SLP}
 	${PRIN} " %b\\n" "${TICK}"
     ${PRIN} " %b %s " "${INFO}" "Build completed for ${INFO_MODEL}"

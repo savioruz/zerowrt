@@ -25,10 +25,11 @@ error() {
 # Select OpenWrt version from official repository
 OPENWRT_VERSION () {
     DIALOG_VERSION=$(whiptail --title "Openwrt Version" \
-		--radiolist "Choose your version" ${R} ${C} 3 \
+		--radiolist "Choose your version" ${R} ${C} 4 \
 		"22.03.0" "Latest Stable Release" ON \
 		"21.02.3" "Old Stable Release" OFF \
-		"18.06.9" "Old Stable Archive"  OFF \
+        "19.07.10" "Old Stable Archive"  OFF \
+		"18.06.9" "Very Old Stable Archive"  OFF \
     3>&1 1>&2 2>&3)
 
     if [ $? = 0 ] ; then
@@ -37,11 +38,9 @@ OPENWRT_VERSION () {
         error "Operation Canceled"
     fi
 
-	if [[ ${DIALOG_VERSION} = 19.* ]] ; then
+	if [[ ${DIALOG_VERSION} = 18.* || ${DIALOG_VERSION} = 19.* ]] ; then
 		export OPENWRT_RASPI="brcm2708"
-	elif [[ ${DIALOG_VERSION} = 18.* ]] ; then
-		export OPENWRT_RASPI="brcm2708"
-	elif [[ ${DIALOG_VERSION} = 21.* ]] ; then
+	elif [[ ${DIALOG_VERSION} = 21.* || ${DIALOG_VERSION} = 22.* ]] ; then
 		export OPENWRT_RASPI="bcm27xx"
 	fi
 }
@@ -135,7 +134,7 @@ OPENWRT_IPADDR () {
 OPENWRT_TUNNEL () {
     whiptail --title "Select tunnel package" \
 		--checklist --separate-output "Choose your package" ${R} ${C} 4 \
-		"Openclash" "" ON \
+		"OpenClash" "" ON \
 		"Openvpn" ""  OFF \
 		"Wireguard" ""  OFF \
 		"Xderm" ""  OFF \
@@ -143,8 +142,8 @@ OPENWRT_TUNNEL () {
 
     while read dTunnel ; do
         case "$dTunnel" in
-            Openclash)
-                Openclash
+            OpenClash)
+                OpenClash
             ;;
             Openvpn)
                 Openvpn
@@ -246,7 +245,7 @@ export HOME_DIR="${ROOT_DIR}/root"
 	${PRIN} "%b\\n" "${TICK}"
 }
 
-Openclash () {
+OpenClash () {
         # Install openclash
         ${PRIN} " %b %s ... " "${INFO}" "Preparing OpenClash"
             # Install luci-app-openclash
@@ -514,7 +513,7 @@ EOI
 }
 
 old () {
-    if [[ ${OPENWRT_VERZION} = 19.* || ${OPENWRT_VERZION} = 18.* ]] ; then
+    if [[ ${OPENWRT_VERZION} = 18.* || ${OPENWRT_VERZION} = 19.* ]] ; then
         ${PRIN} " %b %s " "${INFO}" "Detected old version openwrt"
             # Download bcm27xx-userland manual
             export USERLAND_REPO="https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/packages/bcm27xx-userland.ipk"
@@ -527,7 +526,7 @@ old () {
             # Configure network
             export NETWORK_DIR="files/etc/uci-defaults/99_configure_network"
             rm files/etc/config/network
-            cat > ${NETWORK_DIR} << "EOF"
+            cat > ${NETWORK_DIR} << EOF
 uci -q batch << EOI
 set network.lan=interface
 set network.lan.type='bridge'
@@ -551,8 +550,63 @@ EOF
 }
 
 other () {
+    # Install Tano Theme modified for OpenWrt 21.* above
+    if [[ ${DIALOG_VERSION} = 21.* || ${DIALOG_VERSION} = 22.* ]] ; then
+		export tanoTheme_REPO="https://github.com/jakues/luci-theme-tano/releases/download/v1.0.0/luci-theme-tano_git-22.270.48565-6eb0f6d_all.ipk"
+        wget -q -P packages/ ${tanoTheme_REPO} || error "Failed to download file:luci-theme-tano.ipk"
+        ${ECMD} "src luci-theme-tano file:packages" >> repositories.conf
+        cat >> packages.txt << EOF
+luci-theme-tano
+EOF
+        cat > files/etc/uci-defaults/97_enable_tano_theme << EOL
+#!/bin/sh
+config core 'main'
+	option lang 'auto'
+	option resourcebase '/luci-static/resources'
+	option ubuspath '/ubus/'
+	option mediaurlbase '/luci-static/tano'
+
+config extern 'flash_keep'
+	option uci '/etc/config/'
+	option dropbear '/etc/dropbear/'
+	option openvpn '/etc/openvpn/'
+	option passwd '/etc/passwd'
+	option opkg '/etc/opkg.conf'
+	option firewall '/etc/firewall.user'
+	option uploads '/lib/uci/upload/'
+
+config internal 'languages'
+
+config internal 'sauth'
+	option sessionpath '/tmp/luci-sessions'
+	option sessiontime '3600'
+
+config internal 'ccache'
+	option enable '1'
+
+config internal 'themes'
+	option Bootstrap '/luci-static/bootstrap'
+	option Material '/luci-static/material'
+	option BootstrapDark '/luci-static/bootstrap-dark'
+	option BootstrapLight '/luci-static/bootstrap-light'
+	option Tano '/luci-static/tano'
+
+config internal 'apply'
+	option rollback '90'
+	option holdoff '4'
+	option timeout '5'
+	option display '1.5'
+
+config internal 'diag'
+	option dns 'openwrt.org'
+	option ping 'openwrt.org'
+	option route 'openwrt.org'
+EOL
+	fi
+
+    # Add config for usb otg
     export LAN_DIR="files/etc/uci-defaults/99_configure_lan"
-    cat > ${LAN_DIR} << "EOF"
+    cat > ${LAN_DIR} << EOF
 uci -q batch << EOI
 set network.lan.ifname="`uci get network.lan.ifname` usb0"
 commit network

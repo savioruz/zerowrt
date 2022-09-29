@@ -310,19 +310,34 @@ EOF
             # Install requirements
             cat >> packages.txt << EOL
 php7
+php7-cli
 php7-cgi
 php7-mod-session
 php7-mod-ctype
 php7-mod-fileinfo
 php7-mod-mbstring
 php7-mod-json
+php7-mod-iconv
+php7-mod-zip
 iconv
 EOL
             # Kick off TFM
-            export TFM_Repo="https://github.com/noct99/blog.vpngame.com/raw/main/fileexplorer.zip"
+            export TFM_Repo="https://github.com/prasathmani/tinyfilemanager/raw/master/tinyfilemanager.php"
+            export TFM_Conf="https://github.com/prasathmani/tinyfilemanager/raw/master/config-sample.php"
             export TFM_Dir="files/www"
             wget -q -P ${TFM_Dir} ${TFM_Repo} || error "Cant download tiny file manager"
-            unzip -q ${TFM_Dir}/fileexplorer.zip -d ${TFM_Dir}
+            wget -q -O ${TFM_Dir}/config.php ${TFM_Conf} || error "Cant download tiny file manager config"
+            sed -i -e 's/$use_auth = true;/$use_auth = false;/g' \
+            -e 's#Etc/UTC#Asia/Jakarta#g' \
+            -e 's/?>//g' \
+            -e 's#$root_path*#// $root_path*#g' ${TFM_Dir}/config.php
+            cat >> ${TFM_Dir}/config.php << EOI
+
+root_path = '../'
+
+?>
+EOI
+            sed -i -e 's#root_path#$root_path#g' ${TFM_Dir}/config.php
             export TFM_Lua_Dir="files/usr/lib/lua/luci/controller"
             export TFM_Html_Dir="files/usr/lib/lua/luci/view"
             mkdir -p ${TFM_Lua_Dir}
@@ -340,7 +355,7 @@ EOF
 <iframe id="tinyfm" style="width: 100%; min-height: 650px; border: none; border-radius: 2px;"></iframe>
 </div>
 <script type="text/javascript">
-document.getElementById("tinyfm").src = "http://" + window.location.hostname + "/tinyfm.php";
+document.getElementById("tinyfm").src = "http://" + window.location.hostname + "tinyfilemanager.php";
 </script>
 <%+footer%>
 EOL
@@ -571,131 +586,6 @@ other () {
 #         cat >> packages.txt << EOF
 # luci-theme-tano
 # EOF
-        cat > files/usr/lib/lua/luci/view/themes/tano/footer.htm << EOF
-<%#
-  Created by Victor Polotebnov (v.polotebnov@tano-systems.com)
-%>
-<%
-  local ver = require "luci.version"
-%>
-          <div class="footer">
-            <div class="container">
-                  <span>
-                    <a href="https://github.com/tano-systems/luci" target="_blank">Powered by <%= ver.luciname %></a> | <%= ver.luciversion %>
-                  </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <script type="text/javascript">L.require('menu-tano', null, '${PKG_VERSION}')</script>
-  </body>
-</html>
-
-EOF
-        cat > files/usr/lib/lua/luci/view/themes/tano/footer.htm << EOF
-<%
-
-local util = require "luci.util"
-local sys  = require "luci.sys"
-local http = require "luci.http"
-local disp = require "luci.dispatcher"
-
-local boardinfo = util.ubus("system", "board")
-local node = disp.context.dispatched
-
-local request  = disp.context.path
-local category = request[1]
-
-local body_data_path = "login"
-
-if disp.context.authsession and #disp.context.path > 0 then
-	body_data_path = table.concat(disp.context.path, "-")
-end
-
--- send as HTML5
-http.prepare_content("text/html")
--%>
-
-<!DOCTYPE html>
-<html lang="<%= luci.i18n.context.lang %>">
-  <head>
-    <meta charset="utf-8"/>
-    <title>
-      <%= striptags( (boardinfo.hostname or "?") .. ( (node and node.title) and ' - ' .. translate(node.title) or '')) %> - LuCI
-    </title>
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
-    <link rel="stylesheet" href="<%= media %>/cascade.css?v=unknown" />
-    <script src="<%=url('admin/translations', luci.i18n.context.lang)%>?v=unknown"></script>
-    <script type="text/javascript" src="<%= resource %>/cbi.js?v=unknown"></script>
-    <script type="text/javascript">
-      document.addEventListener('DOMContentLoaded', function() {
-        L.require('ui').then(function(ui) {
-          ui.setIndicatorCustomRenderFn('poll-status', function(id, label, style) {
-            var circle = E('span', { 'class': 'circle' });
-            circle.innerHTML = '<svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1639 1056q0 5-1 7-64 268-268 434.5t-478 166.5q-146 0-282.5-55t-243.5-157l-129 129q-19 19-45 19t-45-19-19-45v-448q0-26 19-45t45-19h448q26 0 45 19t19 45-19 45l-137 137q71 66 161 102t187 36q134 0 250-65t186-179q11-17 53-117 8-23 30-23h192q13 0 22.5 9.5t9.5 22.5zm25-800v448q0 26-19 45t-45 19h-448q-26 0-45-19t-19-45 19-45l138-138q-148-137-349-137-134 0-250 65t-186 179q-11 17-53 117-8 23-30 23h-199q-13 0-22.5-9.5t-9.5-22.5v-7q65-268 270-434.5t480-166.5q146 0 284 55.5t245 156.5l130-129q19-19 45-19t45 19 19 45z"/></svg>'
-            return E('div', { 'class': 'xhr-poll-status' }, [
-              E('span', { 'class': 'xhr-poll-status-' + style }, [
-                circle, E('span', { 'class': 'bar' })
-              ]),
-              E('span', { 'class': 'xhr-poll-label'}, _('Auto Refresh'))
-            ]);
-          });
-          ui.setIndicatorCustomRenderFn('uci-changes', function(id, label, style) {
-            var n = label.match(/\d+/);
-            if (n === null)
-              return E('div', {});
-            return E('div', { 'class': 'uci-changes' }, [
-              E('span', { 'class': 'uci-changes-label' }, _('Unsaved Changes') + ':'),
-              E('span', { 'class': 'uci-changes-number' }, n[0])
-            ]);
-          });
-        });
-      });
-    </script>
-    <link rel="icon" href="<%= media %>/favicon.png">
-  </head>
-  <body data-path="<%=body_data_path%>">
-    <div class="header">
-      <div class="container">
-        <div class="header-controls">
-          <div class="logo">
-            <img src="<%= media %>/logo.png" class="logo"/>
-          </div>
-          <div id="indicators"></div>
-          <% if luci.dispatcher.context.authsession then %>
-            <img src="<%= media %>/fa-bars.svg" id="sidemenu-toggle" class="header-icon menu-icon"/>
-          <% end %>
-        </div>
-      </div>
-      <div class="additional-info">
-        <div class="container">
-          <%- if not headers or headers["x-luci-login-required"] ~= "yes" then -%>
-            <div class="breadcrumbs-wrapper" id="menu-breadcrumbs"></div>
-          <%- end -%>
-          <div class="hostname">
-            <span class="title"><%:Hostname%>:</span>
-            <%= striptags(boardinfo.hostname or "?") %>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="content">
-      <div class="container">
-        <%- if category then %>
-          <div class="dn" id="sidemenu"></div>
-        <% end %>
-        <div id="maincontent" class="main-content">
-          <%- if not headers or headers["x-luci-login-required"] ~= "yes" then -%>
-            <%- if sys.process.info("uid") == 0 and sys.user.getuser("root") and not sys.user.getpasswd("root") then -%>
-            <div class="alert-message">
-              <h4 align="center"><%:No password set!%></h4>
-              <p align="center"><%:There is no password set on this router. Please configure a root password to protect the web interface and enable SSH.%></p>
-              <p align="center"><a class="cbi-button cbi-button-link cbi-button-apply margin-top-15" href="<%=pcdata(luci.dispatcher.build_url('admin/system/admin'))%>"><%:Go to password configuration...%></a></p>
-            </div>
-            <%- end -%>
-          <%- end -%>
-EOF
         cat > files/etc/uci-defaults/30_luci-theme-tano << EOL
 #!/bin/sh
 
@@ -712,6 +602,7 @@ exit 0
 EOL
         cat > files/etc/uci-defaults/97_enable_tano_theme << EOL
 #!/bin/sh
+cat > /etc/config/luci << EOF
 config core 'main'
 	option lang 'auto'
 	option resourcebase '/luci-static/resources'
@@ -753,6 +644,7 @@ config internal 'diag'
 	option dns 'openwrt.org'
 	option ping 'openwrt.org'
 	option route 'openwrt.org'
+EOF
 EOL
 	fi
 

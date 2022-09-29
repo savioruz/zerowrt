@@ -355,7 +355,7 @@ EOF
 <iframe id="tinyfm" style="width: 100%; min-height: 650px; border: none; border-radius: 2px;"></iframe>
 </div>
 <script type="text/javascript">
-document.getElementById("tinyfm").src = "http://" + window.location.hostname + "tinyfilemanager.php";
+document.getElementById("tinyfm").src = "http://" + window.location.hostname + "/tinyfilemanager.php";
 </script>
 <%+footer%>
 EOL
@@ -465,8 +465,8 @@ EOF
         wget -q -P files/usr/bin/ ${XDERM_REPO}/adds/xdrauth || error "Failed to download xderm binaries !"
         wget -q -P files/www/xderm/ ${XDERM_REPO}/adds/xdrtheme-blue-agus || error "Failed to download xderm binaries"
         wget -q -P files/bin/ ${XDERM_REPO}/adds/xdrtool || error "Failed to download xderm binaries"
-        chmod +x files/usr/bin/xdrauth || error "Faild to change permission"
-        chmod +x files/usr/bin/xdrtool || error "Faild to change permission"
+        chmod +x files/usr/bin/xdrauth || error "Failed to change permission"
+        chmod +x files/usr/bin/xdrtool || error "Failed to change permission"
         rm files/www/xderm/login.php files/www/xderm/header.php || error "Failed to remove xderm:login webpage"
         cat > files/usr/lib/lua/luci/controller/xderm.lua << EOF
 module("luci.controller.xderm", package.seeall)
@@ -671,7 +671,7 @@ OPENWRT_BUILD () {
         DISABLED_SERVICES="${ZEROWRT_DISABLED}" || errorClean "Failed to Build"
     ${PRIN} " %b %s " "${INFO}" "Cleanup"
     # Back to first directory
-    cd .. || error "Can't back to working directory !"
+    cd .. || error "Can't back to working directory"
     # Store the firmware to ez dir
     mkdir -p results || error "Failed to create directory"
     cp -r ${IMAGEBUILDER_DIR}/bin/targets/${OPENWRT_RASPI}/${MODEL_ARCH} results || error "Failed to store firmware"

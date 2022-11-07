@@ -33,7 +33,7 @@ errorClean () {
 OPENWRT_VERSION () {
     DIALOG_VERSION=$(whiptail --title "Openwrt Version" \
 		--radiolist "Choose your version" ${R} ${C} 4 \
-		"22.03.0" "Latest Stable Release" ON \
+		"22.03.2" "Latest Stable Release" ON \
 		"21.02.3" "Old Stable Release" OFF \
         "19.07.10" "Old Stable Archive"  OFF \
 		"18.06.9" "Very Old Stable Archive"  OFF \
@@ -225,7 +225,7 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
     # Change main directory
-    cd ${IMAGEBUILDER_DIR} || error "Failed to change directory !"
+    cd ${IMAGEBUILDER_DIR} || error "Failed to change directory"
     ${PRIN} " %b %s " "${INFO}" "Current directory : $(pwd)"
     ${SLP}
     ${PRIN} "%b\\n" "${TICK}"
@@ -541,8 +541,6 @@ EOI
 old () {
     if [[ ${OPENWRT_VERZION} = 18.* || ${OPENWRT_VERZION} = 19.* ]] ; then
         ${PRIN} " %b %s " "${INFO}" "Detected old version openwrt"
-            # # Downgrae php version yo php7
-            # sed -e 's/php7/php7/g' packages.txt
             # Download bcm27xx-userland manual
             export USERLAND_REPO="https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/packages/bcm27xx-userland.ipk"
             wget -q -P packages/ ${USERLAND_REPO} || error "Failed to download file:bcm27xx-userland.ipk"

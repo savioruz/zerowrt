@@ -17,18 +17,26 @@ export R=20
 export C=70
 export OPENWRT_ORIGINAL_URL="https://downloads.openwrt.org/releases"
 
-error() {
+error () {
     ${PRIN} "$1 ! ${CROSS}\n"
+    exit
+}
+
+errorClean () {
+    ${PRIN} "$1 ! ${CROSS}\n"
+    cd ..
+    rm -rf openwrt-imagebuilder*
     exit
 }
 
 # Select OpenWrt version from official repository
 OPENWRT_VERSION () {
     DIALOG_VERSION=$(whiptail --title "Openwrt Version" \
-		--radiolist "Choose your version" ${R} ${C} 3 \
-		"21.02.3" "Latest Stable Release" ON \
-		"19.07.9" "Old Stable Release" OFF \
-		"18.06.9" "Old Stable Archive"  OFF \
+		--radiolist "Choose your version" ${R} ${C} 4 \
+		"22.03.2" "Latest Stable Release" ON \
+		"21.02.5" "Old Stable Release" OFF \
+        "19.07.10" "Old Stable Archive"  OFF \
+		"18.06.9" "Very Old Stable Archive"  OFF \
     3>&1 1>&2 2>&3)
 
     if [ $? = 0 ] ; then
@@ -37,11 +45,9 @@ OPENWRT_VERSION () {
         error "Operation Canceled"
     fi
 
-	if [[ ${DIALOG_VERSION} = 19.* ]] ; then
+	if [[ ${DIALOG_VERSION} = 18.* || ${DIALOG_VERSION} = 19.* ]] ; then
 		export OPENWRT_RASPI="brcm2708"
-	elif [[ ${DIALOG_VERSION} = 18.* ]] ; then
-		export OPENWRT_RASPI="brcm2708"
-	elif [[ ${DIALOG_VERSION} = 21.* ]] ; then
+	elif [[ ${DIALOG_VERSION} = 21.* || ${DIALOG_VERSION} = 22.* ]] ; then
 		export OPENWRT_RASPI="bcm27xx"
 	fi
 }
@@ -135,7 +141,7 @@ OPENWRT_IPADDR () {
 OPENWRT_TUNNEL () {
     whiptail --title "Select tunnel package" \
 		--checklist --separate-output "Choose your package" ${R} ${C} 4 \
-		"Openclash" "" ON \
+		"OpenClash" "" ON \
 		"Openvpn" ""  OFF \
 		"Wireguard" ""  OFF \
 		"Xderm" ""  OFF \
@@ -143,8 +149,8 @@ OPENWRT_TUNNEL () {
 
     while read dTunnel ; do
         case "$dTunnel" in
-            Openclash)
-                Openclash
+            OpenClash)
+                OpenClash
             ;;
             Openvpn)
                 Openvpn
@@ -193,39 +199,39 @@ export ROOT_DIR="${IMAGEBUILDER_DIR}/files"
 export HOME_DIR="${ROOT_DIR}/root"
     # Prepare imagebuilder
     ${PRIN} " %b %s ... " "${INFO}" "Downloading Imagebuilder"
-    	wget -q ${IMAGEBUILDER_URL} || error "Failed to download imagebuilder !"
+    	wget -q ${IMAGEBUILDER_URL} || error "Failed to download imagebuilder"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
     ${PRIN} " %b %s ... " "${INFO}" "Extracting Imagebuilder"
-        tar xf ${IMAGEBUILDER_FILE} || error "Failed to extract file !"
+        tar xf ${IMAGEBUILDER_FILE} || error "Failed to extract file"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
     ${PRIN} " %b %s ... " "${INFO}" "Removing Imagebuilder"
-        rm ${IMAGEBUILDER_FILE} || error "Failed to remove file !"
+        rm ${IMAGEBUILDER_FILE} || error "Failed to remove file"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
         export DIR_TYPE="universal/"
-        cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt !"
-        cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt !"
+        cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt"
+        cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt"
         # export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))"
     # Prepare data
     ${PRIN} " %b %s ... " "${INFO}" "Preparing data"
-        mkdir -p ${ROOT_DIR} || error "Failed to create files/root directory !"
-        # mkdir -p files/usr/lib/lua/luci/controller files/usr/lib/lua/luci/view  || error "Failed to create directory !"
-        cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || error "Failed to copy data !"
+        mkdir -p ${ROOT_DIR} || error "Failed to create files/root directory"
+        # mkdir -p files/usr/lib/lua/luci/controller files/usr/lib/lua/luci/view  || error "Failed to create directory"
+        cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || error "Failed to copy data"
         chmod +x ${ROOT_DIR}/usr/bin/neofetch || error "Failed to chmod:neofetch"
         chmod +x ${ROOT_DIR}/usr/bin/hilink || error "Failed to chmod:hilink"
         chmod +x ${ROOT_DIR}/etc/zshinit || error "Failed to chmod:zshinit"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
     # Change main directory
-    cd ${IMAGEBUILDER_DIR} || error "Failed to change directory !"
+    cd ${IMAGEBUILDER_DIR} || error "Failed to change directory"
     ${PRIN} " %b %s " "${INFO}" "Current directory : $(pwd)"
     ${SLP}
     ${PRIN} "%b\\n" "${TICK}"
     ${PRIN} " %b %s ... " "${INFO}" "Configure data"
-        sed -i -e "s/CONFIG_TARGET_KERNEL_PARTSIZE=.*/CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}/" .config || error "Failed to change bootfs size !"
-        sed -i -e "s/CONFIG_TARGET_ROOTFS_PARTSIZE=.*/CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}/" .config || error "Failed to change rootfs size !"
+        sed -i -e "s/CONFIG_TARGET_KERNEL_PARTSIZE=.*/CONFIG_TARGET_KERNEL_PARTSIZE=${BOOTFS}/" .config || error "Failed to change bootfs size"
+        sed -i -e "s/CONFIG_TARGET_ROOTFS_PARTSIZE=.*/CONFIG_TARGET_ROOTFS_PARTSIZE=${ROOTFS}/" .config || error "Failed to change rootfs size"
         sed -i -e "s/4.3.2.1/${IP_ADDR}/" files/etc/config/network || error "Failed to change openwrt ip address"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
@@ -238,6 +244,10 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${PRIN} " %b %s ... " "${INFO}" "Add Additional Repository"
         # Disable Signature Verification
         sed -i 's/option check_signature/# option check_signature/g' repositories.conf
+        # Repo 21.02.3 packages
+        ${ECMD} "src/gz old_packages_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/packages/" >> repositories.conf
+        # Repo 21.02.3 base
+        ${ECMD} "src/gz old_base_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/base/" >> repositories.conf
         # Generic
         ${ECMD} "src/gz custom_generic https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/generic" >> repositories.conf
         # Architecture
@@ -246,7 +256,7 @@ export HOME_DIR="${ROOT_DIR}/root"
 	${PRIN} "%b\\n" "${TICK}"
 }
 
-Openclash () {
+OpenClash () {
         # Install openclash
         ${PRIN} " %b %s ... " "${INFO}" "Preparing OpenClash"
             # Install luci-app-openclash
@@ -300,19 +310,34 @@ EOF
             # Install requirements
             cat >> packages.txt << EOL
 php7
+php7-cli
 php7-cgi
 php7-mod-session
 php7-mod-ctype
 php7-mod-fileinfo
 php7-mod-mbstring
 php7-mod-json
+php7-mod-iconv
+php7-mod-zip
 iconv
 EOL
             # Kick off TFM
-            export TFM_Repo="https://github.com/noct99/blog.vpngame.com/raw/main/fileexplorer.zip"
+            export TFM_Repo="https://github.com/prasathmani/tinyfilemanager/raw/master/tinyfilemanager.php"
+            export TFM_Conf="https://github.com/prasathmani/tinyfilemanager/raw/master/config-sample.php"
             export TFM_Dir="files/www"
             wget -q -P ${TFM_Dir} ${TFM_Repo} || error "Cant download tiny file manager"
-            unzip ${TFM_Dir}/fileexplorer.zip -d ${TFM_Dir}
+            wget -q -O ${TFM_Dir}/config.php ${TFM_Conf} || error "Cant download tiny file manager config"
+            sed -i -e 's/$use_auth = true;/$use_auth = false;/g' \
+            -e 's#Etc/UTC#Asia/Jakarta#g' \
+            -e 's/?>//g' \
+            -e 's#$root_path*#// $root_path*#g' ${TFM_Dir}/config.php
+            cat >> ${TFM_Dir}/config.php << EOI
+
+root_path = '../'
+
+?>
+EOI
+            sed -i -e 's#root_path#$root_path#g' ${TFM_Dir}/config.php
             export TFM_Lua_Dir="files/usr/lib/lua/luci/controller"
             export TFM_Html_Dir="files/usr/lib/lua/luci/view"
             mkdir -p ${TFM_Lua_Dir}
@@ -330,7 +355,7 @@ EOF
 <iframe id="tinyfm" style="width: 100%; min-height: 650px; border: none; border-radius: 2px;"></iframe>
 </div>
 <script type="text/javascript">
-document.getElementById("tinyfm").src = "http://" + window.location.hostname + "/tinyfm.php";
+document.getElementById("tinyfm").src = "http://" + window.location.hostname + "/tinyfilemanager.php";
 </script>
 <%+footer%>
 EOL
@@ -369,13 +394,13 @@ Xderm () {
         export XDERM_BIN="https://github.com/jakues/openwrt-proprietary/raw/main/xderm.txt"
         mkdir -p files/usr/bin
         mkdir -p files/bin
-        wget -q ${XDERM_BIN} || error "Failed to download file:binaries.txt !"
+        wget -q ${XDERM_BIN} || error "Failed to download file:binaries.txt"
             while IFS= read -r line ; do
                     if ! which ${line} > /dev/null 2>&1 ; then
                     bin="files/usr/bin/${line}"
                     ${ECMD} "\e[0;34mInstalling\e[0m ${line} ..."
-                    wget -q -O "${bin}" "https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download xderm binaries !"
-                    chmod +x "${bin}" || error "Failed to chmod !"
+                    wget -q -O "${bin}" "https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/binaries/${line}" || error "Failed to download xderm binaries"
+                    chmod +x "${bin}" || error "Failed to chmod"
                     fi
             done < xderm.txt
         mkdir -p packages
@@ -383,7 +408,7 @@ Xderm () {
         | grep '/kuoruan/openwrt-v2ray/releases/download' \
         | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' \
         | grep 'v2ray-core_' | grep ${ARCH})
-        wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray-core.ipk !"
+        wget -q -P packages/ ${V2RAY_REPO} || error "Failed to download file:v2ray-core.ipk"
         ${ECMD} "src v2ray-core file:packages" >> repositories.conf
         cat >> packages.txt << EOF
 coreutils-base64
@@ -420,7 +445,7 @@ EOF
                     if ! which ${line} > /dev/null 2>&1 ; then
                     xderm_www="files/www/xderm/${line}"
                     ${ECMD} "\e[0;34mDownloading\e[0m ${line} ..."
-                    wget -q -O ${xderm_www} ${XDERM_REPO}/${line} || error "Failed to download xderm binaries !"
+                    wget -q -O ${xderm_www} ${XDERM_REPO}/${line} || error "Failed to download xderm binaries"
                     fi
             done < xderm
         cat >> xderm-img << EOF
@@ -433,15 +458,15 @@ EOF
                     if ! which ${line} > /dev/null 2>&1 ; then
                     xderm_img="files/www/xderm/img/${line}"
                     ${ECMD} "\e[0;34mDownloading\e[0m ${line} ..."
-                    wget -q -O ${xderm_img} ${XDERM_REPO}/${line} || error "Failed to download xderm binaries !"
+                    wget -q -O ${xderm_img} ${XDERM_REPO}/${line} || error "Failed to download xderm binaries"
                     fi
             done < xderm-img
-        wget -q -P files/www/xderm/js/ ${XDERM_REPO}/jquery-2.1.3.min.js || error "Failed to download xderm binaries !"
+        wget -q -P files/www/xderm/js/ ${XDERM_REPO}/jquery-2.1.3.min.js || error "Failed to download xderm binaries"
         wget -q -P files/usr/bin/ ${XDERM_REPO}/adds/xdrauth || error "Failed to download xderm binaries !"
-        wget -q -P files/www/xderm/ ${XDERM_REPO}/adds/xdrtheme-blue-agus || error "Failed to download xderm binaries !"
-        wget -q -P files/bin/ ${XDERM_REPO}/adds/xdrtool || error "Failed to download xderm binaries !"
-        chmod +x files/usr/bin/xdrauth || error "Faild to change permission"
-        chmod +x files/usr/bin/xdrtool || error "Faild to change permission"
+        wget -q -P files/www/xderm/ ${XDERM_REPO}/adds/xdrtheme-blue-agus || error "Failed to download xderm binaries"
+        wget -q -P files/bin/ ${XDERM_REPO}/adds/xdrtool || error "Failed to download xderm binaries"
+        chmod +x files/usr/bin/xdrauth || error "Failed to change permission"
+        chmod +x files/usr/bin/xdrtool || error "Failed to change permission"
         rm files/www/xderm/login.php files/www/xderm/header.php || error "Failed to remove xderm:login webpage"
         cat > files/usr/lib/lua/luci/controller/xderm.lua << EOF
 module("luci.controller.xderm", package.seeall)
@@ -468,7 +493,7 @@ EOF
 Theme () {
     # Install luci theme edge
     export EDGE_REPO=$(curl -sL https://github.com/kiddin9/luci-theme-edge/releases | grep 'luci-theme-edge_' | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
-    wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk !"
+    wget -q -P packages/ ${EDGE_REPO} || error "Failed to download file:luci-theme-edge.ipk"
     ${ECMD} "src luci-theme-edge file:packages" >> repositories.conf
     ${ECMD} "luci-theme-edge" >> packages.txt
 }
@@ -514,7 +539,7 @@ EOI
 }
 
 old () {
-    if [[ ${OPENWRT_VERZION} = 19.* || ${OPENWRT_VERZION} = 18.* ]] ; then
+    if [[ ${OPENWRT_VERZION} = 18.* || ${OPENWRT_VERZION} = 19.* ]] ; then
         ${PRIN} " %b %s " "${INFO}" "Detected old version openwrt"
             # Download bcm27xx-userland manual
             export USERLAND_REPO="https://github.com/jakues/openwrt-proprietary/raw/main/${ARCH}/packages/bcm27xx-userland.ipk"
@@ -527,7 +552,7 @@ old () {
             # Configure network
             export NETWORK_DIR="files/etc/uci-defaults/99_configure_network"
             rm files/etc/config/network
-            cat > ${NETWORK_DIR} << "EOF"
+            cat > ${NETWORK_DIR} << EOF
 uci -q batch << EOI
 set network.lan=interface
 set network.lan.type='bridge'
@@ -551,14 +576,83 @@ EOF
 }
 
 other () {
-    export LAN_DIR="files/etc/uci-defaults/99_configure_lan"
-    cat > ${LAN_DIR} << "EOF"
-uci -q batch << EOI
-set network.lan.ifname="`uci get network.lan.ifname` usb0"
-commit network
-EOI
-echo "dtoverlay=dwc2" >> /boot/config.txt
+    # Install Tano Theme modified for OpenWrt 21.* above
+    if [[ ${DIALOG_VERSION} = 21.* || ${DIALOG_VERSION} = 22.* ]] ; then
+# 		export tanoTheme_REPO="https://github.com/jakues/luci-theme-tano/releases/download/v1.0.0/luci-theme-tano_git-22.270.48565-6eb0f6d_all.ipk"
+#         wget -q -P packages/ ${tanoTheme_REPO} || error "Failed to download file:luci-theme-tano.ipk"
+#         ${ECMD} "src luci-theme-tano file:packages" >> repositories.conf
+#         cat >> packages.txt << EOF
+# luci-theme-tano
+# EOF
+        cat > files/etc/uci-defaults/30_luci-theme-tano << EOL
+#!/bin/sh
+
+if [ "$PKG_UPGRADE" != 1 ]; then
+	uci get luci.themes.Tano >/dev/null 2>&1 || \
+	uci batch <<-EOF
+		set luci.themes.Tano=/luci-static/tano
+		set luci.main.mediaurlbase=/luci-static/tano
+		commit luci
+	EOF
+fi
+
+exit 0
+EOL
+        cat > files/etc/uci-defaults/97_enable_tano_theme << EOL
+#!/bin/sh
+cat > /etc/config/luci << EOF
+config core 'main'
+	option lang 'auto'
+	option resourcebase '/luci-static/resources'
+	option ubuspath '/ubus/'
+	option mediaurlbase '/luci-static/tano'
+
+config extern 'flash_keep'
+	option uci '/etc/config/'
+	option dropbear '/etc/dropbear/'
+	option openvpn '/etc/openvpn/'
+	option passwd '/etc/passwd'
+	option opkg '/etc/opkg.conf'
+	option firewall '/etc/firewall.user'
+	option uploads '/lib/uci/upload/'
+
+config internal 'languages'
+
+config internal 'sauth'
+	option sessionpath '/tmp/luci-sessions'
+	option sessiontime '3600'
+
+config internal 'ccache'
+	option enable '1'
+
+config internal 'themes'
+	option Bootstrap '/luci-static/bootstrap'
+	option Material '/luci-static/material'
+	option BootstrapDark '/luci-static/bootstrap-dark'
+	option BootstrapLight '/luci-static/bootstrap-light'
+	option Tano '/luci-static/tano'
+
+config internal 'apply'
+	option rollback '90'
+	option holdoff '4'
+	option timeout '5'
+	option display '1.5'
+
+config internal 'diag'
+	option dns 'openwrt.org'
+	option ping 'openwrt.org'
+	option route 'openwrt.org'
 EOF
+EOL
+	fi
+
+#     # Add config for usb otg
+#     cat > files/etc/uci-defaults/96_enable_otg << EOI
+# #!/bin/sh
+# uci set network.lan.ifname="`uci get network.lan.ifname` usb0"
+# uci commit network
+# echo "dtoverlay=dwc2" >> /boot/config.txt
+# EOI
 }
 
 # Cook the image
@@ -572,15 +666,15 @@ OPENWRT_BUILD () {
         FILES="$(pwd)/files/" \
         EXTRA_IMAGE_NAME="zerowrt" \
         PACKAGES="${ZEROWRT_PACKAGES}" \
-        DISABLED_SERVICES="${ZEROWRT_DISABLED}" || error "Failed to build image !"
+        DISABLED_SERVICES="${ZEROWRT_DISABLED}" || errorClean "Failed to Build"
     ${PRIN} " %b %s " "${INFO}" "Cleanup"
     # Back to first directory
-    cd .. || error "Can't back to working directory !"
+    cd .. || error "Can't back to working directory"
     # Store the firmware to ez dir
     mkdir -p results || error "Failed to create directory"
-    cp -r ${IMAGEBUILDER_DIR}/bin/targets/${OPENWRT_RASPI}/${MODEL_ARCH} results || error "Failed to store firmware !"
+    cp -r ${IMAGEBUILDER_DIR}/bin/targets/${OPENWRT_RASPI}/${MODEL_ARCH} results || error "Failed to store firmware"
     # Clean up
-    rm -rf ${IMAGEBUILDER_DIR} || error "Failed to remove imagebuilder directory !"
+    rm -rf ${IMAGEBUILDER_DIR} || error "Failed to remove imagebuilder directory"
     ${SLP}
 	${PRIN} " %b\\n" "${TICK}"
     ${PRIN} " %b %s " "${INFO}" "Build completed for ${INFO_MODEL}"
@@ -616,8 +710,8 @@ main () {
         ${PRIN} "%b\\n" "${TICK}"
     OPENWRT_TUNNEL
     OPENWRT_ADDONS
-    old
     other
+    old
     OPENWRT_BUILD
 }
 

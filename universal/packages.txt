@@ -53,4 +53,4 @@ usbutils
 whereis
 wget
 zsh
- 
+zoneinfo-asia

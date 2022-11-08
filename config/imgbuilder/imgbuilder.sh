@@ -68,15 +68,19 @@ download_imagebuilder() {
     if [[ ${rpi_board} = bcm2708 ]]; then
         export ARCH="arm_arm1176jzf-s_vfp"
         export MODEL="rpi"
+        export SHORT_ARCH="armv6"
     elif [[ ${rpi_board} = bcm2709 ]]; then
         export ARCH="arm_cortex-a7_neon-vfpv4"
         export MODEL="rpi-2"
+        export SHORT_ARCH="armv7"
     elif [[ ${rpi_board} = bcm2710 ]]; then
         export ARCH="aarch64_cortex-a53"
         export MODEL="rpi-3"
+        export SHORT_ARCH="armv8"
     elif [[ ${rpi_board} = bcm2711 ]]; then
         export ARCH="aarch64_cortex-a72"
         export MODEL="rpi-4"
+        export SHORT_ARCH="armv8"
     fi
 
     # download_file="https://downloads.openwrt.org/releases/${rebuild_branch}/targets/armvirt/64/openwrt-imagebuilder-${rebuild_branch}-armvirt-64.Linux-x86_64.tar.xz"

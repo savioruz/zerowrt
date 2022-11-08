@@ -76,11 +76,11 @@ download_imagebuilder() {
     elif [[ ${rpi_board} = bcm2710 ]]; then
         export ARCH="aarch64_cortex-a53"
         export MODEL="rpi-3"
-        export SHORT_ARCH="armv8"
+        export SHORT_ARCH="arm64"
     elif [[ ${rpi_board} = bcm2711 ]]; then
         export ARCH="aarch64_cortex-a72"
         export MODEL="rpi-4"
-        export SHORT_ARCH="armv8"
+        export SHORT_ARCH="arm64"
     fi
 
     # download_file="https://downloads.openwrt.org/releases/${rebuild_branch}/targets/armvirt/64/openwrt-imagebuilder-${rebuild_branch}-armvirt-64.Linux-x86_64.tar.xz"
@@ -225,6 +225,7 @@ custom_files() {
         OC_Premium_Version=$(echo $(curl -sL https://github.com/vernesong/OpenClash/raw/master/core_version | awk '{print $1}') | awk '{print $2}')
         mkdir -p ${OC_Core_Dir}
         # Core Meta
+        # example https://github.com/vernesong/OpenClash/raw/master/core-lateset/meta/clash-linux-armv7.tar.gz
         wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/meta/clash-linux-${SHORT_ARCH}.tar.gz || error_msg "Failed to download OpenClash Core"
         tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz -C ${OC_Core_Dir} || error_msg "Failed to install OpenClash Core"
         mv files/etc/openclash/core/clash files/etc/openclash/core/clash_meta || error_msg "Failed to rename clash_meta"

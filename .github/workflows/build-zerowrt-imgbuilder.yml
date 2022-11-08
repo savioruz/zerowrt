@@ -79,8 +79,11 @@ jobs:
         run: |
           RELEASES_BRANCH="${{ github.event.inputs.branch }}"
           RPI_BOARD="${{ github.event.inputs.openwrt_board }}"
+          BOOTFS="${{ github.event.inputs.openwrt_boot_size }}"
+          ROOTFS="${{ github.event.inputs.openwrt_root_size }}"
+          ADDR="${{ github.event.inputs.openwrt_address }}"
           chmod +x ${IMAGEBUILDER_SH}
-          ${IMAGEBUILDER_SH} ${RELEASES_BRANCH}
+          ${IMAGEBUILDER_SH} ${RELEASES_BRANCH} ${RPI_BOARD} ${BOOTFS} ${ROOTFS} ${ADDR}
           echo "RELEASES_BRANCH=${RELEASES_BRANCH}" >> ${GITHUB_ENV}
           echo "RPI_BOARD=${RPI_BOARD}" >> ${GITHUB_ENV}
           echo "status=success" >> ${GITHUB_OUTPUT}

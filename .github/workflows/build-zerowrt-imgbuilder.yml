@@ -89,7 +89,7 @@ jobs:
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Upload ZeroWrt Firmware to Release
-          uses: ncipollo/release-action@main
+          uses: ncipollo/release-action@v1.11.1
           if: ${{ steps.imagebuilder.outputs.status }} == 'success' && !cancelled()
           with:
             openwrt_path: openwrt/bin/targets/${openwrt_rpi}/${rpi_board}/openwrt-${rebuild_branch}-${rpi_board}-${openwrt_rpi}-${MODEL}-ext4-factory.img.gz

@@ -207,13 +207,13 @@ custom_files() {
         # Disable Signature Verification
         sed -i 's/option check_signature/# option check_signature/g' repositories.conf
         # Add Repo 21.02.3 packages
-        ${ECMD} "src/gz old_packages_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/packages/" >>repositories.conf
+        echo "src/gz old_packages_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/packages/" >> repositories.conf
         # Add Repo 21.02.3 base
-        ${ECMD} "src/gz old_base_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/base/" >>repositories.conf
+        echo "src/gz old_base_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/base/" >> repositories.conf
         # Add lrdrdn Generic repo
-        ${ECMD} "src/gz custom_generic https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/generic" >>repositories.conf
+        echo "src/gz custom_generic https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/generic" >> repositories.conf
         # Add lrdrdn Architecture repo
-        ${ECMD} "src/gz custom_arch https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/${ARCH}" >>repositories.conf
+        echo "src/gz custom_arch https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/${ARCH}" >> repositories.conf
         #
         # Install Core Clash
         OC_Core_Dir="files/etc/openclash/core"

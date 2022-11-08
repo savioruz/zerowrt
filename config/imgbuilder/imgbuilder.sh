@@ -156,6 +156,7 @@ custom_packages() {
     # Add Requirements for OpenClash
     echo "src luci-app-openclash file:packages" >>repositories.conf
     cat >>packages.txt <<EOF
+
 coreutils
 coreutils-nohup
 iptables-mod-tproxy
@@ -170,6 +171,7 @@ EOF
 
     # Add Requirements for TinyFileManager
     cat >>packages.txt <<EOL
+
 php7
 php7-cli
 php7-cgi
@@ -316,7 +318,7 @@ rebuild_firmware() {
         DISABLED_SERVICES="${ZEROWRT_DISABLED}"
 
     sync && sleep 3
-    echo -e "${INFO} [ openwrt/bin/targets/armvirt/64 ] directory status: $(ls bin/targets/*/* -l 2>/dev/null)"
+    echo -e "${INFO} [ openwrt/bin/targets/${openwrt_rpi}/${rpi_board} ] directory status: $(ls bin/targets/*/* -l 2>/dev/null)"
     echo -e "${SUCCESS} The rebuild is successful, the current path: [ ${PWD} ]"
 }
 

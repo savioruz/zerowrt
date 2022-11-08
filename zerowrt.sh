@@ -210,7 +210,7 @@ export HOME_DIR="${ROOT_DIR}/root"
         rm ${IMAGEBUILDER_FILE} || error "Failed to remove file"
     ${SLP}
 	${PRIN} "%b\\n" "${TICK}"
-        export DIR_TYPE="universal/"
+        export DIR_TYPE="config/"
         cp $(pwd)/${DIR_TYPE}/disabled.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:disabled.txt"
         cp $(pwd)/${DIR_TYPE}/packages.txt ${IMAGEBUILDER_DIR} || error "Failed to copy file:packages.txt"
         # export ZEROWRT_DISABLED="$(echo $(cat $(pwd)/${DIR_TYPE}/disabled.txt))"
@@ -218,7 +218,7 @@ export HOME_DIR="${ROOT_DIR}/root"
     ${PRIN} " %b %s ... " "${INFO}" "Preparing data"
         mkdir -p ${ROOT_DIR} || error "Failed to create files/root directory"
         # mkdir -p files/usr/lib/lua/luci/controller files/usr/lib/lua/luci/view  || error "Failed to create directory"
-        cp -arf $(pwd)/${DIR_TYPE}/data/* ${ROOT_DIR} || error "Failed to copy data"
+        cp -arf $(pwd)/${DIR_TYPE}/files/* ${ROOT_DIR} || error "Failed to copy data"
         chmod +x ${ROOT_DIR}/usr/bin/neofetch || error "Failed to chmod:neofetch"
         chmod +x ${ROOT_DIR}/usr/bin/hilink || error "Failed to chmod:hilink"
         chmod +x ${ROOT_DIR}/etc/zshinit || error "Failed to chmod:zshinit"
@@ -266,8 +266,8 @@ OpenClash () {
             # | awk 'FNR <= 1')
             export OC_Version=$(curl -sL https://github.com/vernesong/OpenClash/tags \
             | grep 'v0.45.' \
-            | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=##g' -e 's/>//g' -e 's#/vernesong/OpenClash/releases/tag/##g' -e 's/v//g' \
-            | awk 'FNR <= 1')
+            | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=##g' -e 's/>//g' -e 's#/vernesong/OpenClash/releases/tag/##g' -e 's/v//g' -e 's#<aclass=Link--mutedhref=##g' -e 's/>//g' \
+            | awk 'FNR == 4')
             export OC_Luci="https://github.com/vernesong/OpenClash/releases/download/v${OC_Version}/luci-app-openclash_${OC_Version}_all.ipk"
             wget -q -P packages/ ${OC_Luci} || error "Failed to download file:luci-app-openclash.ipk !"
             ${ECMD} "src luci-app-openclash file:packages" >> repositories.conf

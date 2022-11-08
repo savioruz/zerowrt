@@ -311,7 +311,7 @@ rebuild_firmware() {
     export ZEROWRT_DISABLED="$(echo $(cat disabled.txt))"
     
     # Rebuild firmware
-    make image PROFILE="${INFO_MODEL}" \
+    make image PROFILE="${MODEL}" \
         FILES="files/" \
         PACKAGES="${ZEROWRT_PACKAGES}" \
         DISABLED_SERVICES="${ZEROWRT_DISABLED}"

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #================================================================================================
 #
 # This file is licensed under the terms of the GNU General Public

@@ -1,0 +1,103 @@
+#=====================================================================================
+# Credits :
+# https://github.com/ophub/amlogic-s9xxx-openwrt
+# Description: Build OpenWrt with Image Builder
+# Instructions: https://openwrt.org/docs/guide-user/additional-software/imagebuilder
+# Download options: https://downloads.openwrt.org/releases
+#=====================================================================================
+
+name: Build ZeroWrt with ImageBuilder
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Select Version Release"
+        required: false
+        default: "22.03.2"
+        type: choice
+        options:
+          - 22.03.2
+          - 21.02.5
+          - 19.07.10
+          - 18.06.9
+      openwrt_board:
+        description: "Select Rpi Board"
+        required: false
+        default: "bcm2710"
+        type: choice
+        options:
+          - bcm2708
+          - bcm2709
+          - bcm2710
+          - bcm2711
+      openwrt_boot_size:
+        description: "Write bootfs size [>30 Mb]"
+        required: false
+        default: "30"
+      openwrt_root_size:
+        description: "Write rootfs size [>300 Mb]"
+        required: false
+        default: "300"
+      openwrt_address:
+        description: "Write ip address openwrt"
+        required: false
+        default: "192.168.1.1"
+
+env:
+  TZ: Indonesia/Jakarta
+  IMAGEBUILDER_SH: config/imgbuilder/imagebuilder.sh
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.repository.owner.id }} == ${{ github.event.sender.id }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Initialization environment
+        id: init
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run:
+          docker rmi `docker images -q`
+          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/apt/sources.list.d /usr/local/lib/android 2>/dev/null
+          sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* adoptopenjdk* mysql* php* mongodb* dotnet* moby* snapd* || true
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install $(curl -fsSL https://is.gd/depend_ubuntu2204_openwrt)
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          sudo timedatectl set-timezone "${TZ}"
+          echo "status=success" >> ${GITHUB_OUTPUT}
+        
+      - name: Build Rootfs with imagebuilder
+        id: imgbuilder
+        if: ${{ steps.init.outputs.status }} == 'success' && !cancelled()
+        run: |
+          RELEASES_BRANCH="${{ github.event.inputs.branch }}"
+          RPI_BOARD="${{ github.event.inputs.openwrt_board }}"
+          chmod +x ${IMAGEBUILDER_SH}
+          ${IMAGEBUILDER_SH} ${RELEASES_BRANCH}
+          echo "RELEASES_BRANCH=${RELEASES_BRANCH}" >> ${GITHUB_ENV}
+          echo "RPI_BOARD=${RPI_BOARD}" >> ${GITHUB_ENV}
+          echo "status=success" >> ${GITHUB_OUTPUT}
+
+      # - name: Upload OpenWrt Firmware to Release
+      #     uses: ncipollo/release-action@main
+      #     if: ${{ steps.imagebuilder.outputs.status }} == 'success' && !cancelled()
+      #     with:
+      #       tag: ZeroWrt_${{ env.RELEASES_BRANCH }}
+      #       artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
+      #       allowUpdates: true
+      #       token: ${{ secrets.GH_TOKEN }}
+      #       body: |
+      #         This is ZeroWrt firmware for RaspberryPi
+      #         * Firmware information
+      #         Default IP: 192.168.1.1
+      #         Default username: root
+      #         Default password: none
+      #         Default WIFI name: ZeroWRT
+      #         Default WIFI password: none

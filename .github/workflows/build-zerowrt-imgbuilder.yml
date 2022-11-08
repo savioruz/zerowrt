@@ -47,7 +47,7 @@ on:
 
 env:
   TZ: Indonesia/Jakarta
-  IMAGEBUILDER_SH: config/imgbuilder/imagebuilder.sh
+  IMAGEBUILDER_SH: config/imgbuilder/imgbuilder.sh
 
 jobs:
   build:

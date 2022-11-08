@@ -313,7 +313,6 @@ rebuild_firmware() {
     # Rebuild firmware
     make image PROFILE="${INFO_MODEL}" \
         FILES="files/" \
-        EXTRA_IMAGE_NAME="zerowrt" \
         PACKAGES="${ZEROWRT_PACKAGES}" \
         DISABLED_SERVICES="${ZEROWRT_DISABLED}"
 

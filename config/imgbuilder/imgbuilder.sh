@@ -65,16 +65,16 @@ download_imagebuilder() {
         export openwrt_rpi="bcm27xx"
     fi
 
-    if [[ ${rebuild_branch} = bcm2708 ]]; then
+    if [[ ${rpi_board} = bcm2708 ]]; then
         export ARCH="arm_arm1176jzf-s_vfp"
         export MODEL="rpi"
-    elif [[ ${rebuild_branch} = bcm2709 ]]; then
+    elif [[ ${rpi_board} = bcm2709 ]]; then
         export ARCH="arm_cortex-a7_neon-vfpv4"
         export MODEL="rpi-2"
-    elif [[ ${rebuild_branch} = bcm2710 ]]; then
+    elif [[ ${rpi_board} = bcm2710 ]]; then
         export ARCH="aarch64_cortex-a53"
         export MODEL="rpi-3"
-    elif [[ ${rebuild_branch} = bcm2711 ]]; then
+    elif [[ ${rpi_board} = bcm2711 ]]; then
         export ARCH="aarch64_cortex-a72"
         export MODEL="rpi-4"
     fi
@@ -320,7 +320,7 @@ echo -e "${STEPS} Welcome to Rebuild OpenWrt Using the Image Builder."
 #[[ -x "${0}" ]] || error_msg "Please give the script permission to run: [ chmod +x ${0} ]"
 #[[ -z "${1}" ]] && error_msg "Please specify the OpenWrt Branch, such as [ ${0} 21.02.3 ]"
 rebuild_branch="${1}"
-openwrt_rpi="${2}"
+rpi_board="${2}"
 bootfs="${3}"
 rootfs="${4}"
 addr="${5}"

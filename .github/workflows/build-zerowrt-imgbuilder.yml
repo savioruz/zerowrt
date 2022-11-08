@@ -74,7 +74,7 @@ jobs:
           echo "status=success" >> ${GITHUB_OUTPUT}
         
       - name: Build ZeroWrt with imagebuilder
-        id: imgbuilder
+        id: imagebuilder
         if: ${{ steps.init.outputs.status }} == 'success' && !cancelled()
         run: |
           RELEASES_BRANCH="${{ github.event.inputs.branch }}"
@@ -88,26 +88,20 @@ jobs:
           echo "RPI_BOARD=${RPI_BOARD}" >> ${GITHUB_ENV}
           echo "status=success" >> ${GITHUB_OUTPUT}
 
-      - name: Upload to Github Actions
-          uses: kittaakos/upload-artifact-as-is@master
+      - name: Upload ZeroWrt Firmware to Release
+          uses: ncipollo/release-action@main
           if: ${{ steps.imagebuilder.outputs.status }} == 'success' && !cancelled()
           with:
-            path: openwrt/bin/targets/${openwrt_rpi}/${rpi_board}/openwrt-${rebuild_branch}-${rpi_board}-${openwrt_rpi}-${MODEL}-ext4-factory.img.gz
-
-      # - name: Upload ZeroWrt Firmware to Release
-      #     uses: ncipollo/release-action@main
-      #     if: ${{ steps.imagebuilder.outputs.status }} == 'success' && !cancelled()
-      #     with:
-      #       openwrt_path: openwrt/bin/targets/${openwrt_rpi}/${rpi_board}/openwrt-${rebuild_branch}-${rpi_board}-${openwrt_rpi}-${MODEL}-ext4-factory.img.gz
-      #       tag: ZeroWrt_${{ env.RELEASES_BRANCH }}
-      #       artifacts: ${openwrt_path}
-      #       allowUpdates: true
-      #       token: ${{ secrets.GH_TOKEN }}
-      #       body: |
-      #         This is ZeroWrt firmware for ${MODEL}
-      #         * Firmware information
-      #         Default IP: 192.168.1.1
-      #         Default username: root
-      #         Default password: none
-      #         Default WIFI name: ZeroWRT
-      #         Default WIFI password: none
+            openwrt_path: openwrt/bin/targets/${openwrt_rpi}/${rpi_board}/openwrt-${rebuild_branch}-${rpi_board}-${openwrt_rpi}-${MODEL}-ext4-factory.img.gz
+            tag: ZeroWrt_${{ env.RELEASES_BRANCH }}
+            artifacts: ${openwrt_path}
+            allowUpdates: true
+            token: ${{ secrets.GH_TOKEN }}
+            body: |
+              This is ZeroWrt firmware for ${MODEL}
+              * Firmware information
+              Default IP: 192.168.1.1
+              Default username: root
+              Default password: none
+              Default WIFI name: ZeroWRT
+              Default WIFI password: none

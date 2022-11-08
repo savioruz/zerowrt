@@ -108,7 +108,7 @@ adjust_settings() {
     [[ -s ".config" ]] && {
         echo -e "${STEPS} Start adjusting .config file settings..."
         # Root filesystem archives
-        sed -i "s|CONFIG_TARGET_ROOTFS_CPIOGZ=.*|# CONFIG_TARGET_ROOTFS_CPIOGZ is not set|g" .config
+        # sed -i "s|CONFIG_TARGET_ROOTFS_CPIOGZ=.*|# CONFIG_TARGET_ROOTFS_CPIOGZ is not set|g" .config
         # Root filesystem images
         sed -i "s|CONFIG_TARGET_ROOTFS_SQUASHFS=.*|# CONFIG_TARGET_ROOTFS_SQUASHFS is not set|g" .config
         #
@@ -315,7 +315,7 @@ rebuild_firmware() {
         DISABLED_SERVICES="${ZEROWRT_DISABLED}"
 
     sync && sleep 3
-    echo -e "${INFO} [ openwrt/bin/targets/${openwrt_rpi}/${rpi_board} ] directory status: $(ls bin/targets/*/* -l 2>/dev/null)"
+    echo -e "${INFO} [ openwrt/bin/targets/${openwrt_rpi}/${rpi_board} ] directory status: $(ls bin/targets/${openwrt_rpi}/${rpi_board} -l 2>/dev/null)"
     echo -e "${SUCCESS} The rebuild is successful, the current path: [ ${PWD} ]"
 }
 

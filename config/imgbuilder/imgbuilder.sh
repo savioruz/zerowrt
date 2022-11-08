@@ -332,7 +332,6 @@ echo -e "${INFO} RaspberryPi board: [ ${openwrt_rpi} ]"
 download_imagebuilder
 adjust_settings
 custom_packages
-custom_config
 custom_files
 rebuild_firmware
 #

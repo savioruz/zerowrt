@@ -332,14 +332,23 @@ export all_board=(
 )
 echo -e "${INFO} Rebuild path: [ ${PWD} ]"
 echo -e "${INFO} Rebuild branch: [ ${rebuild_branch} ]"
+# kick off
+if [[ rpi_board == all ]]; then
+    i="1"
+    for i in ${all_board[*]}; do
+        rpi_board=${i}
+        main
+        let i++
+    done
+else
+    main
+fi
 # Git env
 echo -e "Output environment variables."
 echo "MODEL=${MODEL}" >> ${GITHUB_ENV}
 echo "PACKAGED_OUTPUTPATH=${openwrt_outpath}" >> ${GITHUB_ENV}
 echo "PACKAGED_OUTPUTDATE=$(date +"%m.%d.%H%M")" >> ${GITHUB_ENV}
 echo "PACKAGED_STATUS=success" >> ${GITHUB_ENV}
-# kick off
-main
 # Show server end information
 echo -e "Server space usage after compilation: \n$(df -hT ${make_path}) \n"
 # All process completed

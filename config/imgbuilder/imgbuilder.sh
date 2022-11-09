@@ -52,6 +52,18 @@ error_msg() {
     exit 1
 }
 
+# Show welcome message
+prepare() {
+    echo -e "${STEPS} Welcome to Rebuild OpenWrt Using the Image Builder."
+    rebuild_branch="${1}"
+    rpi_board="${2}"
+    bootfs="${3}"
+    rootfs="${4}"
+    addr="${5}"
+    echo -e "${INFO} Rebuild path: [ ${PWD} ]"
+    echo -e "${INFO} Rebuild branch: [ ${rebuild_branch} ]"
+}
+
 # Downloading OpenWrt ImageBuilder
 download_imagebuilder() {
     echo -e "${STEPS} Start downloading OpenWrt files..."
@@ -129,19 +141,6 @@ custom_packages() {
     echo -e "${STEPS} Start adding custom packages..."
     # Create a [ packages ] directory
     [[ -d "packages" ]] || mkdir packages
-
-    # # Download luci-app-amlogic
-    # amlogic_api="https://api.github.com/repos/ophub/luci-app-amlogic/releases"
-    # #
-    # amlogic_file="luci-app-amlogic"
-    # amlogic_file_down="$(curl -s ${amlogic_api} | grep "browser_download_url" | grep -oE "https.*${amlogic_name}.*.ipk" | head -n 1)"
-    # wget -q ${amlogic_file_down} -O packages/${amlogic_file_down##*/}
-    # [[ "${?}" -eq "0" ]] && echo -e "${INFO} The [ ${amlogic_file} ] is downloaded successfully."
-    # #
-    # amlogic_i18n="luci-i18n-amlogic"
-    # amlogic_i18n_down="$(curl -s ${amlogic_api} | grep "browser_download_url" | grep -oE "https.*${amlogic_i18n}.*.ipk" | head -n 1)"
-    # wget -q ${amlogic_i18n_down} -O packages/${amlogic_i18n_down##*/}
-    # [[ "${?}" -eq "0" ]] && echo -e "${INFO} The [ ${amlogic_i18n} ] is downloaded successfully."
 
     # Download luci-app-openclash
     OC_Version=$(curl -sL https://github.com/vernesong/OpenClash/tags |
@@ -315,31 +314,29 @@ rebuild_firmware() {
         DISABLED_SERVICES="${ZEROWRT_DISABLED}"
 
     sync && sleep 3
+    openwrt_outpath=${imagebuilder_path}/bin/targets/${openwrt_rpi}/${rpi_board}
     echo -e "${INFO} [ openwrt/bin/targets/${openwrt_rpi}/${rpi_board} ] directory status: $(ls bin/targets/${openwrt_rpi}/${rpi_board} -l 2>/dev/null)"
     echo -e "${SUCCESS} The rebuild is successful, the current path: [ ${PWD} ]"
 }
 
-# Show welcome message
-echo -e "${STEPS} Welcome to Rebuild OpenWrt Using the Image Builder."
-#[[ -x "${0}" ]] || error_msg "Please give the script permission to run: [ chmod +x ${0} ]"
-#[[ -z "${1}" ]] && error_msg "Please specify the OpenWrt Branch, such as [ ${0} 21.02.3 ]"
-rebuild_branch="${1}"
-rpi_board="${2}"
-bootfs="${3}"
-rootfs="${4}"
-addr="${5}"
-echo -e "${INFO} Rebuild path: [ ${PWD} ]"
-echo -e "${INFO} Rebuild branch: [ ${rebuild_branch} ]"
-echo -e "${INFO} RaspberryPi board: [ ${openwrt_rpi} ]"
-#
-# Perform related operations
-download_imagebuilder
-adjust_settings
-custom_packages
-custom_files
-rebuild_firmware
-#
-# Show server end information
-echo -e "Server space usage after compilation: \n$(df -hT ${make_path}) \n"
-# All process completed
-wait
+main() {
+    # Perform related operations
+    prepare
+    download_imagebuilder
+    adjust_settings
+    custom_packages
+    custom_files
+    rebuild_firmware
+    # Git env
+    echo -e "Output environment variables."
+    echo "MODEL=${MODEL}" >> ${GITHUB_ENV}
+    echo "PACKAGED_OUTPUTPATH=${openwrt_outpath}" >> ${GITHUB_ENV}
+    echo "PACKAGED_OUTPUTDATE=$(date +"%m.%d.%H%M")" >> ${GITHUB_ENV}
+    echo "PACKAGED_STATUS=success" >> ${GITHUB_ENV}
+    # Show server end information
+    echo -e "Server space usage after compilation: \n$(df -hT ${make_path}) \n"
+    # All process completed
+    wait
+    }
+
+main

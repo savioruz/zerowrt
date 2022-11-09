@@ -28,7 +28,8 @@
 # custom_packages         : Add custom packages
 # custom_files            : Add custom files
 # custom_config           : Add custom config
-# rebuild_firmware        : rebuild_firmware
+# rebuild_firmware        : Rebuild_firmware
+# clean_tmp               : Clear temporary files
 #
 #================================ Set make environment variables ================================
 #
@@ -301,10 +302,23 @@ rebuild_firmware() {
         PACKAGES="${ZEROWRT_PACKAGES}" \
         DISABLED_SERVICES="${ZEROWRT_DISABLED}"
 
+    # Store firmware on results dir
+    cd ..
+    mkdir -p results
+    cp -r ${imagebuilder_path}/bin/targets/${openwrt_rpi}/${rpi_board} results
+    openwrt_outpath=results/${rpi_board}
+
     sync && sleep 3
-    openwrt_outpath=${imagebuilder_path}/bin/targets/${openwrt_rpi}/${rpi_board}
-    echo -e "${INFO} [ openwrt/bin/targets/${openwrt_rpi}/${rpi_board} ] directory status: $(ls bin/targets/${openwrt_rpi}/${rpi_board} -l 2>/dev/null)"
+    echo -e "${INFO} [ ${openwrt_outpath} ] directory status: $(ls ${openwrt_outpath} -l 2>/dev/null)"
     echo -e "${SUCCESS} The rebuild is successful, the current path: [ ${PWD} ]"
+}
+
+clean_tmp() {
+    echo -e "${STEPS} Clean Up Temporary File/Folder"
+    rm -rf ${imagebuilder_path}
+
+    sync && sleep 3
+    echo -e "${INFO} [ ${make_path} ] directory status: $(ls . -l 2>/dev/null)"
 }
 
 main() {
@@ -314,6 +328,7 @@ main() {
     custom_packages
     custom_files
     rebuild_firmware
+    clean_tmp
 }
 
 #

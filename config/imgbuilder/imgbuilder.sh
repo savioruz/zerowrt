@@ -52,18 +52,6 @@ error_msg() {
     exit 1
 }
 
-# Show welcome message
-prepare() {
-    echo -e "${STEPS} Welcome to Rebuild OpenWrt Using the Image Builder."
-    export rebuild_branch="${1}"
-    export rpi_board="${2}"
-    export bootfs="${3}"
-    export rootfs="${4}"
-    export addr="${5}"
-    echo -e "${INFO} Rebuild path: [ ${PWD} ]"
-    echo -e "${INFO} Rebuild branch: [ ${rebuild_branch} ]"
-}
-
 # Downloading OpenWrt ImageBuilder
 download_imagebuilder() {
     echo -e "${STEPS} Start downloading OpenWrt files..."
@@ -319,24 +307,30 @@ rebuild_firmware() {
     echo -e "${SUCCESS} The rebuild is successful, the current path: [ ${PWD} ]"
 }
 
-main() {
-    # Perform related operations
-    prepare
-    download_imagebuilder
-    adjust_settings
-    custom_packages
-    custom_files
-    rebuild_firmware
-    # Git env
-    echo -e "Output environment variables."
-    echo "MODEL=${MODEL}" >> ${GITHUB_ENV}
-    echo "PACKAGED_OUTPUTPATH=${openwrt_outpath}" >> ${GITHUB_ENV}
-    echo "PACKAGED_OUTPUTDATE=$(date +"%m.%d.%H%M")" >> ${GITHUB_ENV}
-    echo "PACKAGED_STATUS=success" >> ${GITHUB_ENV}
-    # Show server end information
-    echo -e "Server space usage after compilation: \n$(df -hT ${make_path}) \n"
-    # All process completed
-    wait
-    }
-
-main
+#
+# Show welcome message
+echo -e "${STEPS} Welcome to Rebuild OpenWrt Using the Image Builder."
+export rebuild_branch="${1}"
+export rpi_board="${2}"
+export bootfs="${3}"
+export rootfs="${4}"
+export addr="${5}"
+echo -e "${INFO} Rebuild path: [ ${PWD} ]"
+echo -e "${INFO} Rebuild branch: [ ${rebuild_branch} ]"
+# Perform related operations
+prepare
+download_imagebuilder
+adjust_settings
+custom_packages
+custom_files
+rebuild_firmware
+# Git env
+echo -e "Output environment variables."
+echo "MODEL=${MODEL}" >> ${GITHUB_ENV}
+echo "PACKAGED_OUTPUTPATH=${openwrt_outpath}" >> ${GITHUB_ENV}
+echo "PACKAGED_OUTPUTDATE=$(date +"%m.%d.%H%M")" >> ${GITHUB_ENV}
+echo "PACKAGED_STATUS=success" >> ${GITHUB_ENV}
+# Show server end information
+echo -e "Server space usage after compilation: \n$(df -hT ${make_path}) \n"
+# All process completed
+wait

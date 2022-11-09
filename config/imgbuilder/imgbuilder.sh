@@ -333,14 +333,14 @@ export all_board=(
 echo -e "${INFO} Rebuild path: [ ${PWD} ]"
 echo -e "${INFO} Rebuild branch: [ ${rebuild_branch} ]"
 # kick off
-if [[ rpi_board == all ]]; then
-    echo -e "${INFO} multi board build detect"
+if [[ "${rpi_board}" == "all" ]]; then
+    echo -e "${INFO} Multi build detected"
     for i in ${all_board[*]}; do
         rpi_board=${i}
         main
     done
 else
-    echo -e "${INFO} single board build detect"
+    echo -e "${INFO} Single build detected"
     main
 fi
 # Git env

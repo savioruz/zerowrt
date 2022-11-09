@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #================================================================================================
 #
 # This file is licensed under the terms of the GNU General Public
@@ -65,18 +65,22 @@ download_imagebuilder() {
         export openwrt_rpi="bcm27xx"
     fi
 
-    if [[ ${rebuild_branch} = bcm2708 ]]; then
+    if [[ ${rpi_board} = bcm2708 ]]; then
         export ARCH="arm_arm1176jzf-s_vfp"
         export MODEL="rpi"
-    elif [[ ${rebuild_branch} = bcm2709 ]]; then
+        export SHORT_ARCH="armv6"
+    elif [[ ${rpi_board} = bcm2709 ]]; then
         export ARCH="arm_cortex-a7_neon-vfpv4"
         export MODEL="rpi-2"
-    elif [[ ${rebuild_branch} = bcm2710 ]]; then
+        export SHORT_ARCH="armv7"
+    elif [[ ${rpi_board} = bcm2710 ]]; then
         export ARCH="aarch64_cortex-a53"
         export MODEL="rpi-3"
-    elif [[ ${rebuild_branch} = bcm2711 ]]; then
+        export SHORT_ARCH="arm64"
+    elif [[ ${rpi_board} = bcm2711 ]]; then
         export ARCH="aarch64_cortex-a72"
         export MODEL="rpi-4"
+        export SHORT_ARCH="arm64"
     fi
 
     # download_file="https://downloads.openwrt.org/releases/${rebuild_branch}/targets/armvirt/64/openwrt-imagebuilder-${rebuild_branch}-armvirt-64.Linux-x86_64.tar.xz"
@@ -104,11 +108,9 @@ adjust_settings() {
     [[ -s ".config" ]] && {
         echo -e "${STEPS} Start adjusting .config file settings..."
         # Root filesystem archives
-        sed -i "s|CONFIG_TARGET_ROOTFS_CPIOGZ=.*|# CONFIG_TARGET_ROOTFS_CPIOGZ is not set|g" .config
+        # sed -i "s|CONFIG_TARGET_ROOTFS_CPIOGZ=.*|# CONFIG_TARGET_ROOTFS_CPIOGZ is not set|g" .config
         # Root filesystem images
-        sed -i "s|CONFIG_TARGET_ROOTFS_EXT4FS=.*|# CONFIG_TARGET_ROOTFS_EXT4FS is not set|g" .config
         sed -i "s|CONFIG_TARGET_ROOTFS_SQUASHFS=.*|# CONFIG_TARGET_ROOTFS_SQUASHFS is not set|g" .config
-        sed -i "s|CONFIG_TARGET_IMAGES_GZIP=.*|# CONFIG_TARGET_IMAGES_GZIP is not set|g" .config
         #
         sed -i -e "s/CONFIG_TARGET_KERNEL_PARTSIZE=.*/CONFIG_TARGET_KERNEL_PARTSIZE=${bootfs}/" .config
         sed -i -e "s/CONFIG_TARGET_ROOTFS_PARTSIZE=.*/CONFIG_TARGET_ROOTFS_PARTSIZE=${rootfs}/" .config
@@ -128,19 +130,6 @@ custom_packages() {
     # Create a [ packages ] directory
     [[ -d "packages" ]] || mkdir packages
 
-    # # Download luci-app-amlogic
-    # amlogic_api="https://api.github.com/repos/ophub/luci-app-amlogic/releases"
-    # #
-    # amlogic_file="luci-app-amlogic"
-    # amlogic_file_down="$(curl -s ${amlogic_api} | grep "browser_download_url" | grep -oE "https.*${amlogic_name}.*.ipk" | head -n 1)"
-    # wget -q ${amlogic_file_down} -O packages/${amlogic_file_down##*/}
-    # [[ "${?}" -eq "0" ]] && echo -e "${INFO} The [ ${amlogic_file} ] is downloaded successfully."
-    # #
-    # amlogic_i18n="luci-i18n-amlogic"
-    # amlogic_i18n_down="$(curl -s ${amlogic_api} | grep "browser_download_url" | grep -oE "https.*${amlogic_i18n}.*.ipk" | head -n 1)"
-    # wget -q ${amlogic_i18n_down} -O packages/${amlogic_i18n_down##*/}
-    # [[ "${?}" -eq "0" ]] && echo -e "${INFO} The [ ${amlogic_i18n} ] is downloaded successfully."
-
     # Download luci-app-openclash
     OC_Version=$(curl -sL https://github.com/vernesong/OpenClash/tags |
         grep 'v0.45.' |
@@ -152,6 +141,7 @@ custom_packages() {
     # Add Requirements for OpenClash
     echo "src luci-app-openclash file:packages" >>repositories.conf
     cat >>packages.txt <<EOF
+
 coreutils
 coreutils-nohup
 iptables-mod-tproxy
@@ -166,6 +156,7 @@ EOF
 
     # Add Requirements for TinyFileManager
     cat >>packages.txt <<EOL
+
 php7
 php7-cli
 php7-cgi
@@ -207,13 +198,13 @@ custom_files() {
         # Disable Signature Verification
         sed -i 's/option check_signature/# option check_signature/g' repositories.conf
         # Add Repo 21.02.3 packages
-        ${ECMD} "src/gz old_packages_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/packages/" >>repositories.conf
+        echo "src/gz old_packages_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/packages/" >> repositories.conf
         # Add Repo 21.02.3 base
-        ${ECMD} "src/gz old_base_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/base/" >>repositories.conf
+        echo "src/gz old_base_repos https://downloads.openwrt.org/releases/21.02.3/packages/${ARCH}/base/" >> repositories.conf
         # Add lrdrdn Generic repo
-        ${ECMD} "src/gz custom_generic https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/generic" >>repositories.conf
+        echo "src/gz custom_generic https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/generic" >> repositories.conf
         # Add lrdrdn Architecture repo
-        ${ECMD} "src/gz custom_arch https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/${ARCH}" >>repositories.conf
+        echo "src/gz custom_arch https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/${ARCH}" >> repositories.conf
         #
         # Install Core Clash
         OC_Core_Dir="files/etc/openclash/core"
@@ -221,6 +212,7 @@ custom_files() {
         OC_Premium_Version=$(echo $(curl -sL https://github.com/vernesong/OpenClash/raw/master/core_version | awk '{print $1}') | awk '{print $2}')
         mkdir -p ${OC_Core_Dir}
         # Core Meta
+        # example https://github.com/vernesong/OpenClash/raw/master/core-lateset/meta/clash-linux-armv7.tar.gz
         wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/meta/clash-linux-${SHORT_ARCH}.tar.gz || error_msg "Failed to download OpenClash Core"
         tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz -C ${OC_Core_Dir} || error_msg "Failed to install OpenClash Core"
         mv files/etc/openclash/core/clash files/etc/openclash/core/clash_meta || error_msg "Failed to rename clash_meta"
@@ -304,39 +296,39 @@ rebuild_firmware() {
     export ZEROWRT_DISABLED="$(echo $(cat disabled.txt))"
     
     # Rebuild firmware
-    make image PROFILE="${INFO_MODEL}" \
+    make image PROFILE="${MODEL}" \
         FILES="files/" \
-        EXTRA_IMAGE_NAME="zerowrt" \
         PACKAGES="${ZEROWRT_PACKAGES}" \
         DISABLED_SERVICES="${ZEROWRT_DISABLED}"
 
     sync && sleep 3
-    echo -e "${INFO} [ openwrt/bin/targets/armvirt/64 ] directory status: $(ls bin/targets/*/* -l 2>/dev/null)"
+    openwrt_outpath=${imagebuilder_path}/bin/targets/${openwrt_rpi}/${rpi_board}
+    echo -e "${INFO} [ openwrt/bin/targets/${openwrt_rpi}/${rpi_board} ] directory status: $(ls bin/targets/${openwrt_rpi}/${rpi_board} -l 2>/dev/null)"
     echo -e "${SUCCESS} The rebuild is successful, the current path: [ ${PWD} ]"
 }
 
+#
 # Show welcome message
 echo -e "${STEPS} Welcome to Rebuild OpenWrt Using the Image Builder."
-[[ -x "${0}" ]] || error_msg "Please give the script permission to run: [ chmod +x ${0} ]"
-[[ -z "${1}" ]] && error_msg "Please specify the OpenWrt Branch, such as [ ${0} 21.02.3 ]"
-[[ -z "${2}" ]] && error_msg "Please specify the RaspberryPi board, such as [ ${0} 2710 ]"
-rebuild_branch="${1}"
-openwrt_rpi="${2}"
-bootfs="${3}"
-rootfs="${4}"
-addr="${5}"
+export rebuild_branch="${1}"
+export rpi_board="${2}"
+export bootfs="${3}"
+export rootfs="${4}"
+export addr="${5}"
 echo -e "${INFO} Rebuild path: [ ${PWD} ]"
 echo -e "${INFO} Rebuild branch: [ ${rebuild_branch} ]"
-echo -e "${INFO} RaspberryPi board: [ ${openwrt_rpi} ]"
-#
 # Perform related operations
 download_imagebuilder
 adjust_settings
 custom_packages
-custom_config
 custom_files
 rebuild_firmware
-#
+# Git env
+echo -e "Output environment variables."
+echo "MODEL=${MODEL}" >> ${GITHUB_ENV}
+echo "PACKAGED_OUTPUTPATH=${openwrt_outpath}" >> ${GITHUB_ENV}
+echo "PACKAGED_OUTPUTDATE=$(date +"%m.%d.%H%M")" >> ${GITHUB_ENV}
+echo "PACKAGED_STATUS=success" >> ${GITHUB_ENV}
 # Show server end information
 echo -e "Server space usage after compilation: \n$(df -hT ${make_path}) \n"
 # All process completed

@@ -47,7 +47,7 @@ on:
 
 env:
   TZ: Indonesia/Jakarta
-  IMAGEBUILDER_SH: config/imgbuilder/imagebuilder.sh
+  IMAGEBUILDER_SH: config/imgbuilder/imgbuilder.sh
 
 jobs:
   build:
@@ -73,31 +73,35 @@ jobs:
           sudo timedatectl set-timezone "${TZ}"
           echo "status=success" >> ${GITHUB_OUTPUT}
         
-      - name: Build Rootfs with imagebuilder
-        id: imgbuilder
+      - name: Build ZeroWrt with imagebuilder
+        id: imagebuilder
         if: ${{ steps.init.outputs.status }} == 'success' && !cancelled()
         run: |
           RELEASES_BRANCH="${{ github.event.inputs.branch }}"
           RPI_BOARD="${{ github.event.inputs.openwrt_board }}"
+          BOOTFS="${{ github.event.inputs.openwrt_boot_size }}"
+          ROOTFS="${{ github.event.inputs.openwrt_root_size }}"
+          ADDR="${{ github.event.inputs.openwrt_address }}"
           chmod +x ${IMAGEBUILDER_SH}
-          ${IMAGEBUILDER_SH} ${RELEASES_BRANCH}
+          ${IMAGEBUILDER_SH} ${RELEASES_BRANCH} ${RPI_BOARD} ${BOOTFS} ${ROOTFS} ${ADDR}
           echo "RELEASES_BRANCH=${RELEASES_BRANCH}" >> ${GITHUB_ENV}
           echo "RPI_BOARD=${RPI_BOARD}" >> ${GITHUB_ENV}
           echo "status=success" >> ${GITHUB_OUTPUT}
 
-      # - name: Upload OpenWrt Firmware to Release
-      #     uses: ncipollo/release-action@main
-      #     if: ${{ steps.imagebuilder.outputs.status }} == 'success' && !cancelled()
-      #     with:
-      #       tag: ZeroWrt_${{ env.RELEASES_BRANCH }}
-      #       artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
-      #       allowUpdates: true
-      #       token: ${{ secrets.GH_TOKEN }}
-      #       body: |
-      #         This is ZeroWrt firmware for RaspberryPi
-      #         * Firmware information
-      #         Default IP: 192.168.1.1
-      #         Default username: root
-      #         Default password: none
-      #         Default WIFI name: ZeroWRT
-      #         Default WIFI password: none
+      - name: Upload ZeroWrt Firmware to Release
+        uses: ncipollo/release-action@main
+        if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
+        with:
+          openwrt_path: openwrt/bin/targets/${openwrt_rpi}/${rpi_board}/openwrt-${rebuild_branch}-${rpi_board}-${openwrt_rpi}-${MODEL}-ext4-factory.img.gz
+          tag: ZeroWrt_${{ env.RELEASES_BRANCH }}_${{ env.PACKAGED_OUTPUTDATE }}
+          artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*.gz
+          allowUpdates: true
+          token: ${{ secrets.GH_TOKEN }}
+          body: |
+            This is ZeroWrt firmware for RaspberryPi
+            * Firmware information
+            Default IP: 192.168.1.1
+            Default username: root
+            Default password: none
+            Default WIFI name: ZeroWRT
+            Default WIFI password: none

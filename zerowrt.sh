@@ -90,13 +90,13 @@ OPENWRT_MODEL () {
 		export INFO_MODEL="rpi-3"
 		export ARCH="aarch64_cortex-a53"
         export AKA_ARCH="arm64-v8a"
-        export SHORT_ARCH="armv8"
+        export SHORT_ARCH="arm64"
         export MODELL="${MODEL_3}"
 	elif [[ ${MODEL_ARCH} = bcm2711 ]] ; then
 		export INFO_MODEL="rpi-4"
 		export ARCH="aarch64_cortex-a72"
         export AKA_ARCH="arm64-v8a"
-        export SHORT_ARCH="armv8"
+        export SHORT_ARCH="arm64"
         export MODELL="${MODEL_4}"
 	fi
 }

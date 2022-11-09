@@ -55,11 +55,11 @@ error_msg() {
 # Show welcome message
 prepare() {
     echo -e "${STEPS} Welcome to Rebuild OpenWrt Using the Image Builder."
-    rebuild_branch="${1}"
-    rpi_board="${2}"
-    bootfs="${3}"
-    rootfs="${4}"
-    addr="${5}"
+    export rebuild_branch="${1}"
+    export rpi_board="${2}"
+    export bootfs="${3}"
+    export rootfs="${4}"
+    export addr="${5}"
     echo -e "${INFO} Rebuild path: [ ${PWD} ]"
     echo -e "${INFO} Rebuild branch: [ ${rebuild_branch} ]"
 }

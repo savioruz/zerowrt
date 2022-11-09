@@ -318,7 +318,6 @@ export addr="${5}"
 echo -e "${INFO} Rebuild path: [ ${PWD} ]"
 echo -e "${INFO} Rebuild branch: [ ${rebuild_branch} ]"
 # Perform related operations
-prepare
 download_imagebuilder
 adjust_settings
 custom_packages

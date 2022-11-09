@@ -306,11 +306,10 @@ rebuild_firmware() {
     cd ..
     mkdir -p results
     cp -r ${imagebuilder_path}/bin/targets/${openwrt_rpi}/${rpi_board} results
-    openwrt_outpath=results/${rpi_board}
+    openwrt_outpath=results/*/
 
     sync && sleep 3
-    echo -e "${INFO} [ ${openwrt_outpath} ] directory status: $(ls ${openwrt_outpath} -l 2>/dev/null)"
-    echo -e "${SUCCESS} The rebuild is successful, the current path: [ ${PWD} ]"
+    echo -e "${INFO} [ results/${rpi_board} ] directory status: $(ls results/${rpi_board} -l 2>/dev/null)"
 }
 
 clean_tmp() {
@@ -319,6 +318,7 @@ clean_tmp() {
 
     sync && sleep 3
     echo -e "${INFO} [ ${make_path} ] directory status: $(ls . -l 2>/dev/null)"
+    echo -e "${SUCCESS} Build for ${MODEL} is successful, the current path: [ ${PWD} ]"
 }
 
 main() {
@@ -361,6 +361,7 @@ fi
 # Git env
 echo -e "Output environment variables."
 echo "MODEL=${MODEL}" >> ${GITHUB_ENV}
+echo "IP_ADDRESS=${addr}" >> ${GITHUB_ENV}
 echo "PACKAGED_OUTPUTPATH=${openwrt_outpath}" >> ${GITHUB_ENV}
 echo "PACKAGED_OUTPUTDATE=$(date +"%m.%d.%H%M")" >> ${GITHUB_ENV}
 echo "PACKAGED_STATUS=success" >> ${GITHUB_ENV}

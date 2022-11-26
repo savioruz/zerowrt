@@ -229,8 +229,8 @@ custom_files() {
         rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
         #
         # Install TinyFileManager
-        TFM_Repo="https://github.com/prasathmani/tinyfilemanager/raw/master/tinyfilemanager.php"
-        TFM_Conf="https://github.com/prasathmani/tinyfilemanager/raw/master/config-sample.php"
+        TFM_Repo="https://github.com/jakues/tinyfilemanager/raw/master/tinyfilemanager.php"
+        TFM_Conf="https://github.com/jakues/tinyfilemanager/raw/master/config-sample.php"
         TFM_Dir="files/www"
         wget -q -P ${TFM_Dir} ${TFM_Repo} || error_msg "Cant download tiny file manager"
         wget -q -O ${TFM_Dir}/config.php ${TFM_Conf} || error_msg "Cant download tiny file manager config"
@@ -282,7 +282,10 @@ EOL
 exit 0
 EOL
         fi
+
+        # Set brcm-userland for old branch
         
+
         sync && sleep 3
         echo -e "${INFO} [ files ] directory status: $(ls files -l 2>/dev/null)"
     }

@@ -140,8 +140,8 @@ custom_packages() {
     wget -q -P packages/ ${OC_Luci}
     [[ "${?}" -eq "0" ]] && echo -e "${INFO} The [ ${OC_Luci} ] is downloaded successfully."
     # Add Requirements for OpenClash
-    echo "src luci-app-openclash file:packages" >>repositories.conf
-    cat >>packages.txt <<EOF
+    echo "src luci-app-openclash file:packages" >> repositories.conf
+    cat >>packages.txt << EOF
 
 coreutils
 coreutils-nohup
@@ -154,7 +154,6 @@ ruby-yaml
 ip6tables-mod-nat
 luci-app-openclash
 EOF
-
     # Add Requirements for TinyFileManager
     cat >>packages.txt <<EOL
 
@@ -170,6 +169,11 @@ php7-mod-iconv
 php7-mod-zip
 iconv
 EOL
+    # Add tano theme
+    Tano_Repo="https://github.com/jakues/luci-theme-tano/releases/download/0.1/luci-theme-tano_0.1_all.ipk"
+    wget -q -P packages/ ${Tano_Repo}
+    [[ "${?}" -eq "0" ]] && echo -e "${INFO} The [ ${Tano_Repo} ] is downloaded successfully."
+    echo "src luci-theme-tano file:packages" >> repositories.conf
 
     sync && sleep 3
     echo -e "${INFO} [ packages ] directory status: $(ls packages -l 2>/dev/null)"

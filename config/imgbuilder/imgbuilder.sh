@@ -28,7 +28,8 @@
 # custom_packages         : Add custom packages
 # custom_files            : Add custom files
 # custom_config           : Add custom config
-# rebuild_firmware        : rebuild_firmware
+# rebuild_firmware        : Rebuild_firmware
+# clean_tmp               : Clear temporary files
 #
 #================================ Set make environment variables ================================
 #
@@ -139,8 +140,8 @@ custom_packages() {
     wget -q -P packages/ ${OC_Luci}
     [[ "${?}" -eq "0" ]] && echo -e "${INFO} The [ ${OC_Luci} ] is downloaded successfully."
     # Add Requirements for OpenClash
-    echo "src luci-app-openclash file:packages" >>repositories.conf
-    cat >>packages.txt <<EOF
+    echo "src luci-app-openclash file:packages" >> repositories.conf
+    cat >>packages.txt << EOF
 
 coreutils
 coreutils-nohup
@@ -153,7 +154,6 @@ ruby-yaml
 ip6tables-mod-nat
 luci-app-openclash
 EOF
-
     # Add Requirements for TinyFileManager
     cat >>packages.txt <<EOL
 
@@ -169,6 +169,11 @@ php7-mod-iconv
 php7-mod-zip
 iconv
 EOL
+    # Add tano theme
+    Tano_Repo="https://github.com/jakues/luci-theme-tano/releases/download/0.1/luci-theme-tano_0.1_all.ipk"
+    wget -q -P packages/ ${Tano_Repo}
+    [[ "${?}" -eq "0" ]] && echo -e "${INFO} The [ ${Tano_Repo} ] is downloaded successfully."
+    echo "src luci-theme-tano file:packages" >> repositories.conf
 
     sync && sleep 3
     echo -e "${INFO} [ packages ] directory status: $(ls packages -l 2>/dev/null)"
@@ -228,8 +233,8 @@ custom_files() {
         rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
         #
         # Install TinyFileManager
-        TFM_Repo="https://github.com/prasathmani/tinyfilemanager/raw/master/tinyfilemanager.php"
-        TFM_Conf="https://github.com/prasathmani/tinyfilemanager/raw/master/config-sample.php"
+        TFM_Repo="https://github.com/jakues/tinyfilemanager/raw/master/tinyfilemanager.php"
+        TFM_Conf="https://github.com/jakues/tinyfilemanager/raw/master/config-sample.php"
         TFM_Dir="files/www"
         wget -q -P ${TFM_Dir} ${TFM_Repo} || error_msg "Cant download tiny file manager"
         wget -q -O ${TFM_Dir}/config.php ${TFM_Conf} || error_msg "Cant download tiny file manager config"
@@ -281,7 +286,10 @@ EOL
 exit 0
 EOL
         fi
+
+        # Set brcm-userland for old branch
         
+
         sync && sleep 3
         echo -e "${INFO} [ files ] directory status: $(ls files -l 2>/dev/null)"
     }
@@ -301,10 +309,33 @@ rebuild_firmware() {
         PACKAGES="${ZEROWRT_PACKAGES}" \
         DISABLED_SERVICES="${ZEROWRT_DISABLED}"
 
+    # Store firmware on results dir
+    cd ..
+    mkdir -p results
+    cp -r ${imagebuilder_path}/bin/targets/${openwrt_rpi}/${rpi_board} results
+    openwrt_outpath=results/*/
+
     sync && sleep 3
-    openwrt_outpath=${imagebuilder_path}/bin/targets/${openwrt_rpi}/${rpi_board}
-    echo -e "${INFO} [ openwrt/bin/targets/${openwrt_rpi}/${rpi_board} ] directory status: $(ls bin/targets/${openwrt_rpi}/${rpi_board} -l 2>/dev/null)"
-    echo -e "${SUCCESS} The rebuild is successful, the current path: [ ${PWD} ]"
+    echo -e "${INFO} [ results/${rpi_board} ] directory status: $(ls results/${rpi_board} -l 2>/dev/null)"
+}
+
+clean_tmp() {
+    echo -e "${STEPS} Clean Up Temporary File/Folder"
+    rm -rf ${imagebuilder_path}
+
+    sync && sleep 3
+    echo -e "${INFO} [ ${make_path} ] directory status: $(ls . -l 2>/dev/null)"
+    echo -e "${SUCCESS} Build for ${MODEL} is successful, the current path: [ ${PWD} ]"
+}
+
+main() {
+    # Perform related operations
+    download_imagebuilder
+    adjust_settings
+    custom_packages
+    custom_files
+    rebuild_firmware
+    clean_tmp
 }
 
 #
@@ -315,17 +346,29 @@ export rpi_board="${2}"
 export bootfs="${3}"
 export rootfs="${4}"
 export addr="${5}"
+export all_board=(
+    "bcm2708"
+    "bcm2709"
+    "bcm2710"
+    "bcm2711"
+)
 echo -e "${INFO} Rebuild path: [ ${PWD} ]"
 echo -e "${INFO} Rebuild branch: [ ${rebuild_branch} ]"
-# Perform related operations
-download_imagebuilder
-adjust_settings
-custom_packages
-custom_files
-rebuild_firmware
+# kick off
+if [[ "${rpi_board}" == "all" ]]; then
+    echo -e "${INFO} Multi build detected"
+    for i in ${all_board[*]}; do
+        rpi_board=${i}
+        main
+    done
+else
+    echo -e "${INFO} Single build detected"
+    main
+fi
 # Git env
 echo -e "Output environment variables."
 echo "MODEL=${MODEL}" >> ${GITHUB_ENV}
+echo "IP_ADDRESS=${addr}" >> ${GITHUB_ENV}
 echo "PACKAGED_OUTPUTPATH=${openwrt_outpath}" >> ${GITHUB_ENV}
 echo "PACKAGED_OUTPUTDATE=$(date +"%m.%d.%H%M")" >> ${GITHUB_ENV}
 echo "PACKAGED_STATUS=success" >> ${GITHUB_ENV}

@@ -190,6 +190,7 @@ EOL
     php7-mod-zip
     iconv
 EOL
+    fi
 
     # Add tano theme
     Tano_Repo="https://github.com/jakues/luci-theme-tano/releases/download/0.1/luci-theme-tano_0.1_all.ipk"

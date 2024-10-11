@@ -15,11 +15,11 @@ on:
       branch:
         description: "Select Version Release"
         required: false
-        default: "22.03.2"
+        default: "23.05.5"
         type: choice
         options:
-          - 22.03.2
-          - 21.02.5
+          - 23.05.5
+          - 22.03.7
           - 19.07.10
           - 18.06.9
       openwrt_board:
@@ -63,8 +63,7 @@ jobs:
         id: init
         env:
           DEBIAN_FRONTEND: noninteractive
-        run:
-          docker rmi `docker images -q`
+        run: docker rmi `docker images -q`
           sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/apt/sources.list.d /usr/local/lib/android 2>/dev/null
           sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* adoptopenjdk* mysql* php* mongodb* dotnet* moby* snapd* || true
           sudo -E apt-get -qq update
@@ -73,7 +72,7 @@ jobs:
           sudo -E apt-get -qq clean
           sudo timedatectl set-timezone "${TZ}"
           echo "status=success" >> ${GITHUB_OUTPUT}
-        
+
       - name: Build ZeroWrt with imagebuilder
         id: imagebuilder
         if: ${{ steps.init.outputs.status }} == 'success' && !cancelled()

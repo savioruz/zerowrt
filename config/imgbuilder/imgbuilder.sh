@@ -62,8 +62,14 @@ download_imagebuilder() {
     # Var configuration
     if [[ ${rebuild_branch} = 18.* || ${rebuild_branch} = 19.* ]]; then
         export openwrt_rpi="brcm2708"
-    elif [[ ${rebuild_branch} = 21.* || ${rebuild_branch} = 22.* ]]; then
+    elif [[ ${rebuild_branch} = 22.* || ${rebuild_branch} = 23.* ]]; then
         export openwrt_rpi="bcm27xx"
+    fi
+
+    if [[ ${rebuild_branch} = 23.* ]]; then
+        export PHP_VERSION="8"
+    else
+        export PHP_VERSION="7"
     fi
 
     if [[ ${rpi_board} = bcm2708 ]]; then
@@ -155,20 +161,36 @@ ip6tables-mod-nat
 luci-app-openclash
 EOF
     # Add Requirements for TinyFileManager
-    cat >>packages.txt <<EOL
+    if [[ ${PHP_VERSION} = 8 ]]; then
+        cat >>packages.txt << EOL
 
-php7
-php7-cli
-php7-cgi
-php7-mod-session
-php7-mod-ctype
-php7-mod-fileinfo
-php7-mod-mbstring
-php7-mod-json
-php7-mod-iconv
-php7-mod-zip
-iconv
+php8
+php8-cli
+php8-cgi
+php8-mod-session
+php8-mod-ctype
+php8-mod-fileinfo
+php8-mod-mbstring
+php8-mod-json
+php8-mod-iconv
+php8-mod-zip
 EOL
+    else
+        cat >>packages.txt << EOL
+
+    php7
+    php7-cli
+    php7-cgi
+    php7-mod-session
+    php7-mod-ctype
+    php7-mod-fileinfo
+    php7-mod-mbstring
+    php7-mod-json
+    php7-mod-iconv
+    php7-mod-zip
+    iconv
+EOL
+
     # Add tano theme
     Tano_Repo="https://github.com/jakues/luci-theme-tano/releases/download/0.1/luci-theme-tano_0.1_all.ipk"
     wget -q -P packages/ ${Tano_Repo}
@@ -288,7 +310,7 @@ EOL
         fi
 
         # Set brcm-userland for old branch
-        
+
 
         sync && sleep 3
         echo -e "${INFO} [ files ] directory status: $(ls files -l 2>/dev/null)"
@@ -302,7 +324,7 @@ rebuild_firmware() {
     echo -e "${STEPS} Start building OpenWrt with Image Builder..."
     export ZEROWRT_PACKAGES="$(echo $(cat packages.txt))"
     export ZEROWRT_DISABLED="$(echo $(cat disabled.txt))"
-    
+
     # Rebuild firmware
     make image PROFILE="${MODEL}" \
         FILES="files/" \

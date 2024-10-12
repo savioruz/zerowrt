@@ -67,7 +67,8 @@ download_imagebuilder() {
     fi
 
     if [[ ${rebuild_branch} = 23.* ]]; then
-        export PHP_VERSION="8"
+        # default set to 7 not 8
+        export PHP_VERSION="7"
     else
         export PHP_VERSION="7"
     fi
@@ -139,8 +140,11 @@ custom_packages() {
 
     # Download luci-app-openclash
     OC_Version=$(curl -sL https://github.com/vernesong/OpenClash/tags |
-        grep 'v0.45.' |
-        sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=##g' -e 's/>//g' -e 's#/vernesong/OpenClash/releases/tag/##g' -e 's/v//g' -e 's#<aclass=Link--mutedhref=##g' -e 's/>//g' |
+        grep 'v0.4' |
+        sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=##g' -e 's/>//g' |
+        sed -e 's#/vernesong/OpenClash/archive/refs/tags/##g' |
+        sed -e 's#.zip##g' -e 's#v##g' |
+        sed -e 's#<aclass=Link--mutedhref=##g' -e 's/>//g' |
         awk 'FNR == 4')
     OC_Luci="https://github.com/vernesong/OpenClash/releases/download/v${OC_Version}/luci-app-openclash_${OC_Version}_all.ipk"
     wget -q -P packages/ ${OC_Luci}
@@ -236,7 +240,7 @@ custom_files() {
         #
         # Install Core Clash
         OC_Core_Dir="files/etc/openclash/core"
-        OC_Core_Repo="https://raw.githubusercontent.com/vernesong/OpenClash/master/core-lateset"
+        OC_Core_Repo="https://raw.githubusercontent.com/vernesong/OpenClash/refs/heads/core/master"
         OC_Premium_Version=$(echo $(curl -sL https://github.com/vernesong/OpenClash/raw/master/core_version | awk '{print $1}') | awk '{print $2}')
         mkdir -p ${OC_Core_Dir}
         # Core Meta

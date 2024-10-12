@@ -241,7 +241,7 @@ custom_files() {
         # Install Core Clash
         OC_Core_Dir="files/etc/openclash/core"
         OC_Core_Repo="https://raw.githubusercontent.com/vernesong/OpenClash/refs/heads/core/master"
-        OC_Premium_Version=$(echo $(curl -sL https://github.com/vernesong/OpenClash/raw/master/core_version | awk '{print $1}') | awk '{print $2}')
+        OC_Premium_Version=$(echo $(curl -sL https://github.com/vernesong/OpenClash/raw/refs/heads/core/master/core_version | awk '{print $1}') | awk '{print $2}')
         mkdir -p ${OC_Core_Dir}
         # Core Meta
         # example https://github.com/vernesong/OpenClash/raw/master/core-lateset/meta/clash-linux-armv7.tar.gz

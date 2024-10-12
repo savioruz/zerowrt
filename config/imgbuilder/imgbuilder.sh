@@ -241,17 +241,17 @@ custom_files() {
         mkdir -p ${OC_Core_Dir}
         # Core Meta
         # example https://github.com/vernesong/OpenClash/raw/master/core-lateset/meta/clash-linux-armv7.tar.gz
-        wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/meta/clash-linux-${SHORT_ARCH}.tar.gz || error_msg "Failed to download OpenClash Core"
+        wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/meta/clash-linux-${SHORT_ARCH}.tar.gz || error_msg "Failed to download OpenClash Core [meta]"
         tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz -C ${OC_Core_Dir} || error_msg "Failed to install OpenClash Core"
         mv files/etc/openclash/core/clash files/etc/openclash/core/clash_meta || error_msg "Failed to rename clash_meta"
         rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
         # Core Premium
-        wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/premium/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz || error_msg "Failed to download OpenClash Core"
+        wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/premium/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz || error_msg "Failed to download OpenClash Core [premium]"
         gzip -dk ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz || error_msg "Failed to install OpenClash Core"
         mv ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version} files/etc/openclash/core/clash_tun || error_msg "Failed to rename clash_tun"
         rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}-${OC_Premium_Version}.gz
         # Core Dev
-        wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/dev/clash-linux-${SHORT_ARCH}.tar.gz || error_msg "Failed to download OpenClash Core"
+        wget -q -P ${OC_Core_Dir} ${OC_Core_Repo}/dev/clash-linux-${SHORT_ARCH}.tar.gz || error_msg "Failed to download OpenClash Core [dev]"
         tar -xf ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz -C ${OC_Core_Dir} || error_msg "Failed to install OpenClash Core"
         rm ${OC_Core_Dir}/clash-linux-${SHORT_ARCH}.tar.gz
         #

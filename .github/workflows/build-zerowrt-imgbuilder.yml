@@ -15,10 +15,11 @@ on:
       branch:
         description: "Select Version Release"
         required: false
-        default: "23.05.5"
+        default: "24.10.3"
         type: choice
         options:
-          - 23.05.5
+          - 24.10.3
+          - 23.05.6
           - 22.03.7
           - 19.07.10
           - 18.06.9

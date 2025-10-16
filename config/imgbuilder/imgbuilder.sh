@@ -62,7 +62,7 @@ download_imagebuilder() {
     # Var configuration
     if [[ ${rebuild_branch} = 18.* || ${rebuild_branch} = 19.* ]]; then
         export openwrt_rpi="brcm2708"
-    elif [[ ${rebuild_branch} = 22.* || ${rebuild_branch} = 23.* ]]; then
+    else
         export openwrt_rpi="bcm27xx"
     fi
 

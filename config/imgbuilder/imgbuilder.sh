@@ -66,12 +66,7 @@ download_imagebuilder() {
         export openwrt_rpi="bcm27xx"
     fi
 
-    if [[ ${rebuild_branch} = 23.* ]]; then
-        # default set to 7 not 8
-        export PHP_VERSION="7"
-    else
-        export PHP_VERSION="7"
-    fi
+    export PHP_VERSION="7"
 
     if [[ ${rpi_board} = bcm2708 ]]; then
         export ARCH="arm_arm1176jzf-s_vfp"
